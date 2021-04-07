@@ -220,7 +220,7 @@ class _HorizontalDataTableState extends State<MyHorizontalDataTable> {
   }
   void _addRow(){
     setState(() {
-      int next = rows.length;
+      int next = rows.length+1;
       rows.add("Предмет $next");
       List<bool> newCells = [];
       for (int i=0; i<columns.length-1; i++){
