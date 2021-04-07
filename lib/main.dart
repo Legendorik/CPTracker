@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:horizontal_data_table/horizontal_data_table.dart';
 import 'package:convex_bottom_bar/convex_bottom_bar.dart';
 
 void main() {
@@ -36,6 +35,18 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   static bool selected = true;
 
+  void _addColumn() {
+    setState(() {
+      List<DataColumn> new_columns = dataTable.columns;
+      List<DataRow> new_rows = dataTable.rows;
+      new_columns.add(DataColumn(label: Text("ЛРХ")));
+      for (DataRow row in new_rows) {
+        row.cells.add(DataCell(Text("-")));
+      }
+      dataTable = DataTable(columns: new_columns, rows: new_rows);
+    });
+  }
+
   static List<DataColumn> columns = [
     DataColumn(label: Text("")),
     DataColumn(label: Text("ЛР1")),
@@ -43,18 +54,6 @@ class _MyHomePageState extends State<MyHomePage> {
     DataColumn(label: Text("ЛР3")),
     DataColumn(label: Text("ЛР4")),
     DataColumn(label: Text("ЛР5")),
-    DataColumn(
-      label: Container(
-          width: 30,
-          height: 30,
-          child: RawMaterialButton(
-            shape: new CircleBorder(),
-            onPressed: () {
-              print("1234");
-            },
-            child: Icon(Icons.add, color: Colors.blue),
-          )),
-    )
   ];
 
   static List<DataRow> rows = [
@@ -64,6 +63,13 @@ class _MyHomePageState extends State<MyHomePage> {
       DataCell(Text("-")),
       DataCell(Text("-")),
       DataCell(Text("+")),
+      DataCell(Text("+"))
+    ]),
+    DataRow(selected: selected, cells: [
+      DataCell(Text("Математика")),
+      DataCell(Text("+")),
+      DataCell(Text("-")),
+      DataCell(Text("-")),
       DataCell(Text("+")),
       DataCell(Text("+"))
     ]),
@@ -73,7 +79,6 @@ class _MyHomePageState extends State<MyHomePage> {
       DataCell(Text("-")),
       DataCell(Text("-")),
       DataCell(Text("+")),
-      DataCell(Text("+")),
       DataCell(Text("+"))
     ]),
     DataRow(selected: selected, cells: [
@@ -82,7 +87,6 @@ class _MyHomePageState extends State<MyHomePage> {
       DataCell(Text("-")),
       DataCell(Text("-")),
       DataCell(Text("+")),
-      DataCell(Text("+")),
       DataCell(Text("+"))
     ]),
     DataRow(selected: selected, cells: [
@@ -90,36 +94,36 @@ class _MyHomePageState extends State<MyHomePage> {
       DataCell(Text("+")),
       DataCell(Text("-")),
       DataCell(Text("-")),
-      DataCell(Text("+")),
-      DataCell(Text("+")),
-      DataCell(Text("+"))
-    ]),
-    DataRow(selected: selected, cells: [
-      DataCell(Text("Математика")),
-      DataCell(Text("+")),
-      DataCell(Text("-")),
-      DataCell(Text("-")),
-      DataCell(Text("+")),
       DataCell(Text("+")),
       DataCell(Text("+"))
     ]),
   ];
 
-  static DataTable dataTable = DataTable(columnSpacing: 30, columns: columns, rows: rows);
+  static DataTable dataTable =
+      DataTable(columnSpacing: 30, columns: columns, rows: rows);
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        appBar: AppBar(
-          title: Text(widget.title),
-        ),
-        body: SingleChildScrollView(
-          scrollDirection: Axis.vertical,
-          child: SingleChildScrollView(
+      appBar: AppBar(
+        title: Text(widget.title),
+      ),
+      body: SingleChildScrollView(
+        scrollDirection: Axis.vertical,
+        child: SingleChildScrollView(
             scrollDirection: Axis.horizontal,
-            child: dataTable,
-          ),
-        ),
+            child: Row(children: [
+              dataTable,
+              Container(
+                  width: 30,
+                  height: 30,
+                  child: RawMaterialButton(
+                    shape: new CircleBorder(),
+                    onPressed: _addColumn,
+                    child: Icon(Icons.add, color: Colors.blue),
+                  ))
+            ])),
+      ),
       bottomNavigationBar: ConvexAppBar(
         style: TabStyle.react,
         backgroundColor: Colors.blue,
@@ -130,6 +134,7 @@ class _MyHomePageState extends State<MyHomePage> {
         ],
         initialActiveIndex: 1 /*optional*/,
         onTap: (int i) => print('click index=$i'),
-      ),);
+      ),
+    );
   }
 }
