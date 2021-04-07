@@ -12,8 +12,9 @@ dependencies:
   flutter:
     sdk: flutter
 
-  horizontal_data_table: ^2.5.2
+  horizontal_data_table: ^3.0.0
   convex_bottom_bar: ^3.0.0
+  provider: ^5.0.0
 
   cupertino_icons: ^1.0.2
 
