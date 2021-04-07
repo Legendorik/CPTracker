@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:horizontal_data_table/horizontal_data_table.dart';
 import 'package:convex_bottom_bar/convex_bottom_bar.dart';
+import 'package:horizontal_data_table/horizontal_data_table.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -34,118 +34,72 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  static bool selected = true;
 
-  static List<DataColumn> columns = [
-    DataColumn(label: Text("")),
-    DataColumn(label: Text("ЛР1")),
-    DataColumn(label: Text("ЛР2")),
-    DataColumn(label: Text("ЛР3")),
-    DataColumn(label: Text("ЛР4")),
-    DataColumn(label: Text("ЛР5")),
-    DataColumn(
-      label: Container(
-          width: 30,
-          height: 30,
-          child: RawMaterialButton(
-            shape: new CircleBorder(),
-            onPressed: () {
-              print("1234");
-            },
-            child: Icon(Icons.add, color: Colors.blue),
-          )),
-    )
-  ];
-
-  static List<DataRow> rows = [
-    DataRow(selected: selected, cells: [
-      DataCell(Text("Математика")),
-      DataCell(Icon(Icons.add)),
-      DataCell(Icon(Icons.remove)),
-      DataCell(Text("-")),
-      DataCell(Text("+")),
-      DataCell(Text("+")),
-      DataCell(Text("+"))
-    ]),
-    DataRow(selected: selected, cells: [
-      DataCell(Text("Математика")),
-      DataCell(Text("+")),
-      DataCell(Text("-")),
-      DataCell(Text("-")),
-      DataCell(Text("+")),
-      DataCell(Text("+")),
-      DataCell(Text("+"))
-    ]),
-    DataRow(selected: selected, cells: [
-      DataCell(Text("Математика")),
-      DataCell(Text("+")),
-      DataCell(Text("-")),
-      DataCell(Text("-")),
-      DataCell(Text("+")),
-      DataCell(Text("+")),
-      DataCell(Text("+"))
-    ]),
-    DataRow(selected: selected, cells: [
-      DataCell(Text("Математика")),
-      DataCell(Text("+")),
-      DataCell(Text("-")),
-      DataCell(Text("-")),
-      DataCell(Text("+")),
-      DataCell(Text("+")),
-      DataCell(Text("+"))
-    ]),
-    DataRow(selected: selected, cells: [
-      DataCell(Text("Математика")),
-      DataCell(Text("+")),
-      DataCell(Text("-")),
-      DataCell(Text("-")),
-      DataCell(Text("+")),
-      DataCell(Text("+")),
-      DataCell(Text("+"))
-    ]),
-  ];
-
-  static DataTable dataTable = DataTable(columnSpacing: 30, columns: columns, rows: rows);
+  static Widget dataTable = MyHorizontalDataTable();
+      //DataTable(columnSpacing: 30, columns: columns, rows: rows);
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        appBar: AppBar(
-          title: Text(widget.title),
-        ),
-        //body: SingleChildScrollView(
-        //  scrollDirection: Axis.vertical,
-        //  child: SingleChildScrollView(
-        //    scrollDirection: Axis.horizontal,
-        //    child: dataTable,
-        //  ),
-        //),
-        body: getTableWidget(),
-        bottomNavigationBar: ConvexAppBar(
-          style: TabStyle.react,
-          backgroundColor: Colors.blue,
-          items: [
-            TabItem(icon: Icons.list_alt_outlined),
-            TabItem(icon: Icons.check_box_outline_blank_sharp),
-            TabItem(icon: Icons.check_box_outlined),
-          ],
-          initialActiveIndex: 0 /*optional*/,
-          onTap: (int i) => print('click index=$i'),
-        ),
+      appBar: AppBar(
+        title: Text(widget.title),
+      ),
+
+      body: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.start,
+        children:[
+          Expanded(child: dataTable),
+        ]
+      ),
+      bottomNavigationBar: ConvexAppBar(
+        style: TabStyle.react,
+        backgroundColor: Colors.blue,
+        items: [
+          TabItem(icon: Icons.list_alt_outlined),
+          TabItem(icon: Icons.check_box_outline_blank_sharp),
+          TabItem(icon: Icons.check_box_outlined),
+        ],
+        initialActiveIndex: 0 /*optional*/,
+        onTap: (int i) => print('click index=$i'),
+      ),
     );
   }
 
-  Widget getTableWidget(){
+}
 
+class MyHorizontalDataTable extends StatefulWidget {
+  MyHorizontalDataTable({Key key}) : super(key: key);
+
+  @override
+  State<StatefulWidget> createState() {
+    return _HorizontalDataTableState();
+  }
+
+}
+
+class _HorizontalDataTableState extends State<MyHorizontalDataTable> {
+
+  static List<String> columns = ["Предмет", "Lab1", "Lab2", "Lab3", "Lab4", "Lab5", "Lab6", "Lab7"];
+  static List<String> rows = ["Математика", "Русский", "Информатика", "Физика"];
+  static List<List<bool>> cells = [
+    [true, false, true, false, true, true, false],
+    [true, false, true, false, true, true, false],
+    [true, false, true, false, true, true, false],
+    [true, false, true, false, true, true, false]
+  ];
+  
+  @override
+  Widget build(BuildContext context) {
     return Container(
       child: HorizontalDataTable(
         leftHandSideColumnWidth: 100,
-        rightHandSideColumnWidth: 600,
+        rightHandSideColumnWidth: (columns.length-1)*100.0+100,//MediaQuery.of(context).size.width-100,
         isFixedHeader: true,
         headerWidgets: _getTitlesWidget(),
         leftSideItemBuilder: _generateFirstColumnRow,
         rightSideItemBuilder: _generateRightHandSideColumnRow,
-        itemCount: 4,
+        itemCount: rows.length+1,
         rowSeparatorWidget: const Divider(
           color: Colors.black54,
           height: 1.0,
@@ -159,80 +113,126 @@ class _MyHomePageState extends State<MyHomePage> {
   List<Widget> _getTitlesWidget(){
     //TODO get title list from server 
     List<Widget> res = [];
-    List<String> titles = ["Предмет", "Lab1", "Lab2", "Lab3", "Lab1", "Lab2", "Lab3"];
-    for (String v in titles) {
+    
+    for (String v in columns) {
       res.add(Container(
         child: Text(v, style: TextStyle(fontWeight: FontWeight.bold)),
         width: 100,
         height: 56,
-        padding: EdgeInsets.fromLTRB(5, 0, 0, 0),
-        alignment: Alignment.centerLeft,
+        padding: EdgeInsets.fromLTRB(0, 0, 0, 0),
+        alignment: Alignment.center,
       ));
     }
+    res.add(_createButton(0));
     return res;
   }
 
   Widget _generateFirstColumnRow(BuildContext context, int index) {
     //TODO get list from server 
-    print("index in first: $index");
-    List<String> items = ["Математика", "Русский", "Информатика", "Физика"];
-    return Container(
-      child: Text(items[index]),
-      width: 100,
-      height: 52,
-      padding: EdgeInsets.fromLTRB(5, 0, 0, 0),
-      alignment: Alignment.centerLeft,
-    );
+    //print("index in first: $index");
+    if (index == rows.length){
+      return _createButton(1);
+    }
+    else {
+      return Container(
+        child: Text(rows[index]),
+        width: 100,
+        height: 56,
+        padding: EdgeInsets.fromLTRB(5, 0, 0, 0),
+        alignment: Alignment.centerLeft,
+      );
+    }
+    
   }
 
   Widget _generateRightHandSideColumnRow(BuildContext context, int index) {
-    print("index in right: $index");
-    return Row(
-      children: <Widget>[
-        Container(
-          child: Text('+'),
+    //print("index in right: $index");
+    List<Widget> cellsList = [];
+    if (index < cells.length){
+      for (int i=0; i<cells[index].length; i++) {
+        cellsList.add(
+          
+          Material(
+            color: Colors.white,
+            child:InkWell(
+              child: Container(
+                child: Icon(cells[index][i] ? Icons.add: Icons.remove),
+                width: 100,
+                height: 56,
+                padding: EdgeInsets.fromLTRB(0, 0, 0, 0),
+                alignment: Alignment.center,
+
+              ),
+              onTap: () {
+                print("tap!");
+                _changeCell(index, i);
+              },
+            )
+            
+          )
+        );
+      }
+    }
+    else {
+      for (int i=0; i<columns.length; i++){
+        cellsList.add(Container( width: 100,
+          height: 56,
+          padding: EdgeInsets.fromLTRB(0, 0, 0, 0),
+          alignment: Alignment.center,)
+        );
+      }
+    }
+    return Row(children: cellsList);
+    
+  }
+
+  Widget _createButton(int type){ //TODO перечисления вместо инта?
+    return Material(
+      color: Colors.blue,
+      child:InkWell(
+        child: Container(
+          child: Icon(Icons.add, size: 40, color: Colors.white),
           width: 100,
-          height: 52,
-          padding: EdgeInsets.fromLTRB(5, 0, 0, 0),
-          alignment: Alignment.centerLeft,
+          height: 56,
+          padding: EdgeInsets.fromLTRB(0, 0, 0, 0),
+          alignment: Alignment.center,
         ),
-        Container(
-          child: Text('-'),
-          width: 100,
-          height: 52,
-          padding: EdgeInsets.fromLTRB(5, 0, 0, 0),
-          alignment: Alignment.centerLeft,
-        ),
-        Container(
-          child: Text('+'),
-          width: 100,
-          height: 52,
-          padding: EdgeInsets.fromLTRB(5, 0, 0, 0),
-          alignment: Alignment.centerLeft,
-        ),
-        Container(
-          child: Text('+'),
-          width: 100,
-          height: 52,
-          padding: EdgeInsets.fromLTRB(5, 0, 0, 0),
-          alignment: Alignment.centerLeft,
-        ),
-        Container(
-          child: Text('-'),
-          width: 100,
-          height: 52,
-          padding: EdgeInsets.fromLTRB(5, 0, 0, 0),
-          alignment: Alignment.centerLeft,
-        ),
-        Container(
-          child: Text('+'),
-          width: 100,
-          height: 52,
-          padding: EdgeInsets.fromLTRB(5, 0, 0, 0),
-          alignment: Alignment.centerLeft,
-        ),
-      ],
+        onTap: () {
+          print("tap!");
+          if (type == 0)
+            _addColumn();
+          else
+            _addRow();
+        },
+      )
+    
     );
   }
 
+  void _addColumn(){
+    setState(() {
+      int next = columns.length;
+      columns.add("Lab $next");
+      for (List<bool> v in cells){
+        v.add(false);
+      }
+    });
+  }
+  void _addRow(){
+    setState(() {
+      int next = rows.length;
+      rows.add("Предмет $next");
+      List<bool> newCells = [];
+      for (int i=0; i<columns.length-1; i++){
+        newCells.add(false);
+      }
+      cells.add(newCells);  
+    });
+  }
+  void _changeCell(int i, int j){
+    setState(() {
+      cells[i][j] = !cells[i][j];  
+    });
+  }
+  
 }
