@@ -156,7 +156,7 @@ class _HorizontalDataTableState extends State<MyHorizontalDataTable> {
             color: Colors.white,
             child:InkWell(
               child: Container(
-                child: Icon(cells[index][i] ? Icons.add: Icons.remove),
+                child: Icon(cells[index][i] ? Icons.add: Icons.remove, size:20),
                 width: 100,
                 height: 56,
                 padding: EdgeInsets.fromLTRB(0, 0, 0, 0),
