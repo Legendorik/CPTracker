@@ -50,3 +50,4 @@ app.*.map.json
 /android/app/release
 android/app/src/main/kotlin/com/mukhamux/cp_tracker/MainActivity.kt
 windows/.gitignore
+windows/flutter/generated_plugins.cmake
