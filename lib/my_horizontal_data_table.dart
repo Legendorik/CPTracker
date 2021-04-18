@@ -87,6 +87,7 @@ class _HorizontalDataTableState extends State<MyHorizontalDataTable> {
           
           Material(
             color: Colors.white,
+            //key: Key("changeCell"),
             child:InkWell(
               child: Container(
                 child: Icon(cells[index][i] ? Icons.add: Icons.remove, size:20),
@@ -122,6 +123,7 @@ class _HorizontalDataTableState extends State<MyHorizontalDataTable> {
   Widget _createButton(int type){ //TODO перечисления вместо инта?
     return Material(
       color: Colors.blue,
+      key: Key(type == 0 ? "addColumn":"addRow"),
       child:InkWell(
         child: Container(
           child: Icon(Icons.add, size: 40, color: Colors.white),
@@ -131,7 +133,7 @@ class _HorizontalDataTableState extends State<MyHorizontalDataTable> {
           alignment: Alignment.center,
         ),
         onTap: () {
-          print("tap!");
+          //print("tap!");
           if (type == 0)
             _addColumn();
           else
