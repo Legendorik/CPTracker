@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:horizontal_data_table/horizontal_data_table.dart';
+import 'popup_content.dart';
+import 'popup_edit_titles.dart';
 
 class MyHorizontalDataTable extends StatefulWidget {
   MyHorizontalDataTable({Key key}) : super(key: key);
@@ -138,6 +140,8 @@ class _HorizontalDataTableState extends State<MyHorizontalDataTable> {
             _addColumn();
           else
             _addRow();
+
+          showPopup(context, PopupEditTitles(listener: _listener), "test");
         },
       )
     
@@ -168,6 +172,11 @@ class _HorizontalDataTableState extends State<MyHorizontalDataTable> {
     setState(() {
       cells[i][j] = !cells[i][j];  
     });
+  }
+
+  String _listener(String value){
+    print(value);
+    return "abc";
   }
   
 }
