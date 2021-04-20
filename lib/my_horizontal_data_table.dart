@@ -23,7 +23,11 @@ class _HorizontalDataTableState extends State<MyHorizontalDataTable> {
     [true, false, true, false, true, true, false],
     [true, false, true, false, true, true, false]
   ];
-  
+
+  int _lastRowTitleChosenIndex;
+  int _lastColumnTitleChosenIndex;
+  List<int> _lastCellChosenIndex;
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -49,14 +53,39 @@ class _HorizontalDataTableState extends State<MyHorizontalDataTable> {
     //TODO get title list from server 
     List<Widget> res = [];
     
-    for (String v in columns) {
+
+
+    for (int i=0; i<columns.length; i++) {
+      print(i);
+      Widget button = Material(
+        color: Colors.white,
+        child:InkWell(
+          child: Container(
+            child: Text(columns[i], style: TextStyle(fontWeight: FontWeight.bold)),
+            //width: 100,
+            //height: 56,
+            padding: EdgeInsets.fromLTRB(0, 0, 0, 0),
+            alignment: Alignment.center,
+
+          ),
+          onTap: () {
+            _lastColumnTitleChosenIndex = i;
+            print(columns[i]);
+            showPopup(context, PopupEditTitles(listener: _changeColumnTitleListener), "Название контрольной точки", width: 500, height: 125);
+          },
+        )
+        
+      );
+      Widget text = Text(columns[i], style: TextStyle(fontWeight: FontWeight.bold));
+
       res.add(Container(
-        child: Text(v, style: TextStyle(fontWeight: FontWeight.bold)),
+        child: i == 0? text : button,
         width: 100,
         height: 56,
         padding: EdgeInsets.fromLTRB(0, 0, 0, 0),
         alignment: Alignment.center,
       ));
+
     }
     res.add(_createButton(0));
     return res;
@@ -65,12 +94,34 @@ class _HorizontalDataTableState extends State<MyHorizontalDataTable> {
   Widget _generateFirstColumnRow(BuildContext context, int index) {
     //TODO get list from server 
     //print("index in first: $index");
+
     if (index == rows.length){
       return _createButton(1);
     }
     else {
+
+      Widget button = Material(
+        color: Colors.white,
+        child:InkWell(
+          child: Container(
+            child: Text(rows[index]),
+            //width: 100,
+            //height: 56,
+            padding: EdgeInsets.fromLTRB(0, 0, 0, 0),
+            alignment: Alignment.center,
+
+          ),
+          onTap: () {
+            _lastRowTitleChosenIndex = index;
+            showPopup(context, PopupEditTitles(listener: _changeRowTitleListener), "Название предмета", width: 500,height: 125);
+          },
+        )
+        
+      );
+
+
       return Container(
-        child: Text(rows[index]),
+        child: button,
         width: 100,
         height: 56,
         padding: EdgeInsets.fromLTRB(5, 0, 0, 0),
@@ -141,7 +192,7 @@ class _HorizontalDataTableState extends State<MyHorizontalDataTable> {
           else
             _addRow();
 
-          showPopup(context, PopupEditTitles(listener: _listener), "test");
+          
         },
       )
     
@@ -155,6 +206,8 @@ class _HorizontalDataTableState extends State<MyHorizontalDataTable> {
       for (List<bool> v in cells){
         v.add(false);
       }
+      _lastColumnTitleChosenIndex = columns.length-1;
+      showPopup(context, PopupEditTitles(listener: _changeColumnTitleListener), "Название контрольной точки", width: 500, height: 125);
     });
   }
   void _addRow(){
@@ -166,6 +219,8 @@ class _HorizontalDataTableState extends State<MyHorizontalDataTable> {
         newCells.add(false);
       }
       cells.add(newCells);  
+      _lastRowTitleChosenIndex = rows.length-1;
+      showPopup(context, PopupEditTitles(listener: _changeRowTitleListener), "Название предмета", width: 500,height: 125);
     });
   }
   void _changeCell(int i, int j){
@@ -174,9 +229,23 @@ class _HorizontalDataTableState extends State<MyHorizontalDataTable> {
     });
   }
 
-  String _listener(String value){
+  void _changeColumnTitleListener(String value){
     print(value);
-    return "abc";
+    print(_lastColumnTitleChosenIndex);
+    setState(() {
+      if (columns.length > _lastColumnTitleChosenIndex && value.length > 0){
+        columns[_lastColumnTitleChosenIndex] = value;
+      }
+    });
   }
+  void _changeRowTitleListener(String value){
+    setState(() {
+      print(_lastRowTitleChosenIndex);
+      if (rows.length > _lastRowTitleChosenIndex && value.length > 0){
+        rows[_lastRowTitleChosenIndex] = value;
+      }
+    });
+  }
+
   
 }

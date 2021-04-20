@@ -6,6 +6,8 @@ class PopupLayout extends ModalRoute {
   double bottom;
   double left;
   double right;
+  double width;
+  double height;
   Color bgColor;
   final Widget child;
 
@@ -32,6 +34,8 @@ class PopupLayout extends ModalRoute {
       {Key key,
       this.bgColor,
       @required this.child,
+      this.width,
+      this.height,
       this.top,
       this.bottom,
       this.left,
@@ -47,6 +51,9 @@ class PopupLayout extends ModalRoute {
     if (bottom == null) this.bottom = 20;
     if (left == null) this.left = 20;
     if (right == null) this.right = 20;
+    //if (width == null) this.width = 500;
+    //if (height == null) this.height = 400;
+
 
     return GestureDetector(
       onTap: () {
@@ -60,6 +67,7 @@ class PopupLayout extends ModalRoute {
         // make sure that the overlay content is not cut off
         child: SafeArea(
           bottom: true,
+          minimum: EdgeInsets.zero,
           child: _buildOverlayContent(context),
         ),
       ),
@@ -69,8 +77,8 @@ class PopupLayout extends ModalRoute {
   Widget _buildOverlayContent(BuildContext context) {
     return Center(
       child: Container(
-        width: 300, //TODO size depends on the device
-        height: 400,
+        width: this.width, //TODO size depends on the device
+        height: this.height,
         margin: EdgeInsets.only(
             bottom: this.bottom,
             left: this.left,

@@ -28,10 +28,12 @@ class _PopupContentState extends State<PopupContent> {
 }
 
 showPopup(BuildContext context, Widget widget, String title,
-    {BuildContext popupContext}) {
+    {double width, double height, BuildContext popupContext}) {
   Navigator.push(
     context,
     PopupLayout(
+      width: width,
+      height: height,
       top: 30,
       left: 30,
       right: 30,
@@ -45,7 +47,7 @@ showPopup(BuildContext context, Widget widget, String title,
                 icon: Icon(Icons.arrow_back),
                 onPressed: () {
                   try {
-                    Navigator.pop(context, "ololo"); //close the popup
+                    Navigator.pop(context); //close the popup
                   } catch (e) {}
                 },
               );
