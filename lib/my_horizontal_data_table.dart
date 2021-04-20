@@ -17,11 +17,11 @@ class _HorizontalDataTableState extends State<MyHorizontalDataTable> {
 
   static List<String> columns = ["Предмет", "Lab1", "Lab2", "Lab3", "Lab4", "Lab5", "Lab6", "Lab7"];
   static List<String> rows = ["Математика", "Русский", "Информатика", "Физика"];
-  static List<List<bool>> cells = [
-    [true, false, true, false, true, true, false],
-    [true, false, true, false, true, true, false],
-    [true, false, true, false, true, true, false],
-    [true, false, true, false, true, true, false]
+  static List<List<int>> cells = [ //0 - no task, 1 - in progress, 2 - completed
+    [1, 2, 1, 0, 0, 0, 0],
+    [1, 2, 2, 1, 2, 1, 2],
+    [1, 2, 1, 1, 2, 2, 1],
+    [1, 2, 2, 1, 2, 1, 2]
   ];
 
   int _lastRowTitleChosenIndex;
@@ -143,7 +143,7 @@ class _HorizontalDataTableState extends State<MyHorizontalDataTable> {
             //key: Key("changeCell"),
             child:InkWell(
               child: Container(
-                child: Icon(cells[index][i] ? Icons.add: Icons.remove, size:20),
+                child: Icon(cells[index][i] == 2 ? Icons.check_box: cells[index][i] == 1 ? Icons.check_box_outline_blank : Icons.clear, size:20, color: Colors.blue),
                 width: 100,
                 height: 56,
                 padding: EdgeInsets.fromLTRB(0, 0, 0, 0),
@@ -203,8 +203,8 @@ class _HorizontalDataTableState extends State<MyHorizontalDataTable> {
     setState(() {
       int next = columns.length;
       columns.add("Lab $next");
-      for (List<bool> v in cells){
-        v.add(false);
+      for (List<int> v in cells){
+        v.add(0);
       }
       _lastColumnTitleChosenIndex = columns.length-1;
       showPopup(context, PopupEditTitles(listener: _changeColumnTitleListener), "Название контрольной точки", width: 500, height: 125);
@@ -214,9 +214,9 @@ class _HorizontalDataTableState extends State<MyHorizontalDataTable> {
     setState(() {
       int next = rows.length+1;
       rows.add("Предмет $next");
-      List<bool> newCells = [];
+      List<int> newCells = [];
       for (int i=0; i<columns.length-1; i++){
-        newCells.add(false);
+        newCells.add(0);
       }
       cells.add(newCells);  
       _lastRowTitleChosenIndex = rows.length-1;
@@ -224,14 +224,13 @@ class _HorizontalDataTableState extends State<MyHorizontalDataTable> {
     });
   }
   void _changeCell(int i, int j){
-    setState(() {
-      cells[i][j] = !cells[i][j];  
-    });
+    //setState(() {
+    //  cells[i][j] = !cells[i][j];  
+    //});
+    
   }
 
   void _changeColumnTitleListener(String value){
-    print(value);
-    print(_lastColumnTitleChosenIndex);
     setState(() {
       if (columns.length > _lastColumnTitleChosenIndex && value.length > 0){
         columns[_lastColumnTitleChosenIndex] = value;
