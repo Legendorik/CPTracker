@@ -29,12 +29,12 @@ void main() {
 
       expect(find.byType(HorizontalDataTable), findsOneWidget);
       
-      int minuses = find.byIcon(Icons.remove).evaluate().length;
+      int minuses = find.byIcon(Icons.clear).evaluate().length;
 
       await tester.tap(find.byKey(Key("addRow")));
       await tester.pump();
 
-      expect(minuses, lessThan(find.byIcon(Icons.remove).evaluate().length));
+      expect(minuses, lessThan(find.byIcon(Icons.clear).evaluate().length));
 
       //await tester.tap(find.byKey(Key("addColumn")));
       //await tester.pump();
