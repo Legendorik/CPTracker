@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:homework_task_tracker/popup_task_info.dart';
 import 'package:horizontal_data_table/horizontal_data_table.dart';
+import 'package:intl/intl.dart';
 import 'popup_content.dart';
 import 'popup_edit_titles.dart';
 import 'task_info.dart';
@@ -149,7 +150,7 @@ class _HorizontalDataTableState extends State<MyHorizontalDataTable> {
             //key: Key("changeCell"),
             child:InkWell(
               child: Container(
-                child: Icon(cells[index][i].state == 2 ? Icons.check_box: cells[index][i].state == 1 ? Icons.check_box_outline_blank : Icons.clear, size:20, color: Colors.blue),
+                child: _createTableCell(cells[index][i]),
                 width: 100,
                 height: 56,
                 padding: EdgeInsets.fromLTRB(0, 0, 0, 0),
@@ -205,6 +206,24 @@ class _HorizontalDataTableState extends State<MyHorizontalDataTable> {
     );
   }
 
+  Widget _createTableCell(TaskInfo info){
+    if (info.deadline == null){
+      return Icon(info.state == 2 ? Icons.check_box: info.state == 1 ? Icons.check_box_outline_blank : Icons.clear, size:20, color: Colors.blue);
+    }
+    else{
+      DateTime dateTime = info.deadline; // your dateTime object
+      DateFormat dateFormat = DateFormat("dd/MM/yy, HH:mm"); // how you want it to be formatted
+      String string = dateFormat.format(dateTime);
+      return Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(info.state == 2 ? Icons.check_box: info.state == 1 ? Icons.check_box_outline_blank : Icons.clear, size:20, color: Colors.blue),
+          Text(string, style: TextStyle(fontSize: 12))
+        ],
+      );
+    }
+  }
+
   void _addColumn(){
     setState(() {
       int next = columns.length;
@@ -238,7 +257,7 @@ class _HorizontalDataTableState extends State<MyHorizontalDataTable> {
     //  cells[i][j] = !cells[i][j];  
     //});
     _lastCellChosenIndex = [i, j];
-    showPopup(context, PopupTaskInfo(listener: _changeCellInfoListener, taskInfo: cells[i][j]), "Задание " + rows[i] + " " + columns[j+1], width: 600,height: 500);
+    showPopup(context, PopupTaskInfo(listener: _changeCellInfoListener, taskInfo: cells[i][j]), "Задание " + rows[i] + " " + columns[j+1], width: 600,height: 475);
   }
 
   void _changeColumnTitleListener(String value){
