@@ -58,7 +58,7 @@ class _HorizontalDataTableState extends State<MyHorizontalDataTable> {
 
 
     for (int i=0; i<columns.length; i++) {
-      print(i);
+      //print(i);
       Widget button = Material(
         color: Colors.white,
         child:InkWell(
@@ -72,7 +72,7 @@ class _HorizontalDataTableState extends State<MyHorizontalDataTable> {
           ),
           onTap: () {
             _lastColumnTitleChosenIndex = i;
-            print(columns[i]);
+            //print(columns[i]);
             showPopup(context, PopupEditTitles(listener: _changeColumnTitleListener, name: columns[_lastColumnTitleChosenIndex]), 
                       "Название контрольной точки", width: 500, height: 125
             );
@@ -157,7 +157,7 @@ class _HorizontalDataTableState extends State<MyHorizontalDataTable> {
 
               ),
               onTap: () {
-                print("tap!");
+                //print("tap!");
                 _changeCell(index, i);
               },
             )
@@ -238,7 +238,7 @@ class _HorizontalDataTableState extends State<MyHorizontalDataTable> {
     //  cells[i][j] = !cells[i][j];  
     //});
     _lastCellChosenIndex = [i, j];
-    showPopup(context, PopupTaskInfo(listener: _changeCellInfoListener), "Задание", width: 600,height: 500);
+    showPopup(context, PopupTaskInfo(listener: _changeCellInfoListener, taskInfo: cells[i][j]), "Задание " + rows[i] + " " + columns[j+1], width: 600,height: 500);
   }
 
   void _changeColumnTitleListener(String value){
@@ -250,15 +250,19 @@ class _HorizontalDataTableState extends State<MyHorizontalDataTable> {
   }
   void _changeRowTitleListener(String value){
     setState(() {
-      print(_lastRowTitleChosenIndex);
+      //print(_lastRowTitleChosenIndex);
       if (rows.length > _lastRowTitleChosenIndex && value.length > 0){
         rows[_lastRowTitleChosenIndex] = value;
       }
     });
   }
-  void _changeCellInfoListener(String value){
+  void _changeCellInfoListener(TaskInfo value){
+    //print(value.description);
+    //print(cells[_lastCellChosenIndex[0]][_lastCellChosenIndex[1]].description);
     setState(() {
-      
+      cells[_lastCellChosenIndex[0]][_lastCellChosenIndex[1]].state = value.state;
+      cells[_lastCellChosenIndex[0]][_lastCellChosenIndex[1]].description = value.description;
+      cells[_lastCellChosenIndex[0]][_lastCellChosenIndex[1]].deadline = value.deadline;
     });
   }
 
