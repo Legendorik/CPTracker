@@ -73,7 +73,9 @@ class _HorizontalDataTableState extends State<MyHorizontalDataTable> {
           onTap: () {
             _lastColumnTitleChosenIndex = i;
             print(columns[i]);
-            showPopup(context, PopupEditTitles(listener: _changeColumnTitleListener), "Название контрольной точки", width: 500, height: 125);
+            showPopup(context, PopupEditTitles(listener: _changeColumnTitleListener, name: columns[_lastColumnTitleChosenIndex]), 
+                      "Название контрольной точки", width: 500, height: 125
+            );
           },
         )
         
@@ -115,7 +117,9 @@ class _HorizontalDataTableState extends State<MyHorizontalDataTable> {
           ),
           onTap: () {
             _lastRowTitleChosenIndex = index;
-            showPopup(context, PopupEditTitles(listener: _changeRowTitleListener), "Название предмета", width: 500,height: 125);
+            showPopup(context, PopupEditTitles(listener: _changeRowTitleListener, name: rows[_lastRowTitleChosenIndex]), 
+                      "Название предмета", width: 500,height: 125
+            );
           },
         )
         
@@ -209,7 +213,9 @@ class _HorizontalDataTableState extends State<MyHorizontalDataTable> {
         v.add(TaskInfo(0));
       }
       _lastColumnTitleChosenIndex = columns.length-1;
-      showPopup(context, PopupEditTitles(listener: _changeColumnTitleListener), "Название контрольной точки", width: 500, height: 125);
+      showPopup(context, PopupEditTitles(listener: _changeColumnTitleListener, name: columns[_lastColumnTitleChosenIndex]), 
+                "Название контрольной точки", width: 500, height: 125
+      );
     });
   }
   void _addRow(){
@@ -222,7 +228,9 @@ class _HorizontalDataTableState extends State<MyHorizontalDataTable> {
       }
       cells.add(newCells);  
       _lastRowTitleChosenIndex = rows.length-1;
-      showPopup(context, PopupEditTitles(listener: _changeRowTitleListener), "Название предмета", width: 500,height: 125);
+      showPopup(context, PopupEditTitles(listener: _changeRowTitleListener, name: rows[_lastRowTitleChosenIndex]), 
+                "Название предмета", width: 500,height: 125
+      );
     });
   }
   void _changeCell(int i, int j){

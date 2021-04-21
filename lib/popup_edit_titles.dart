@@ -3,7 +3,8 @@ import 'package:flutter/material.dart';
 class PopupEditTitles extends StatelessWidget {
 
   final Function(String) listener;
-  const PopupEditTitles({Key key, this.listener}): super(key: key);
+  final String name;
+  const PopupEditTitles({Key key, this.listener, this.name}): super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -17,6 +18,7 @@ class PopupEditTitles extends StatelessWidget {
                 listener(value);
                 Navigator.pop(context);
               },
+              controller: TextEditingController.fromValue(new TextEditingValue(text: name)), //default value
               decoration: InputDecoration(
                 hintText: 'Введите название...',
                 contentPadding:
