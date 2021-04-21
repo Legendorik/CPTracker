@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:homework_task_tracker/popup_task_info.dart';
 import 'package:horizontal_data_table/horizontal_data_table.dart';
 import 'popup_content.dart';
 import 'popup_edit_titles.dart';
+import 'task_info.dart';
 
 class MyHorizontalDataTable extends StatefulWidget {
   MyHorizontalDataTable({Key key}) : super(key: key);
@@ -17,11 +19,11 @@ class _HorizontalDataTableState extends State<MyHorizontalDataTable> {
 
   static List<String> columns = ["Предмет", "Lab1", "Lab2", "Lab3", "Lab4", "Lab5", "Lab6", "Lab7"];
   static List<String> rows = ["Математика", "Русский", "Информатика", "Физика"];
-  static List<List<int>> cells = [ //0 - no task, 1 - in progress, 2 - completed
-    [1, 2, 1, 0, 0, 0, 0],
-    [1, 2, 2, 1, 2, 1, 2],
-    [1, 2, 1, 1, 2, 2, 1],
-    [1, 2, 2, 1, 2, 1, 2]
+  static List<List<TaskInfo>> cells = [ //0 - no task, 1 - in progress, 2 - completed
+    [TaskInfo(1), TaskInfo(2), TaskInfo(1), TaskInfo(2), TaskInfo(2), TaskInfo(0), TaskInfo(0)],
+    [TaskInfo(1), TaskInfo(2), TaskInfo(1), TaskInfo(1), TaskInfo(2), TaskInfo(1), TaskInfo(1)],
+    [TaskInfo(2), TaskInfo(2), TaskInfo(2), TaskInfo(2), TaskInfo(2), TaskInfo(1), TaskInfo(1)],
+    [TaskInfo(2), TaskInfo(2), TaskInfo(2), TaskInfo(1), TaskInfo(2), TaskInfo(1), TaskInfo(1)]
   ];
 
   int _lastRowTitleChosenIndex;
@@ -143,7 +145,7 @@ class _HorizontalDataTableState extends State<MyHorizontalDataTable> {
             //key: Key("changeCell"),
             child:InkWell(
               child: Container(
-                child: Icon(cells[index][i] == 2 ? Icons.check_box: cells[index][i] == 1 ? Icons.check_box_outline_blank : Icons.clear, size:20, color: Colors.blue),
+                child: Icon(cells[index][i].state == 2 ? Icons.check_box: cells[index][i].state == 1 ? Icons.check_box_outline_blank : Icons.clear, size:20, color: Colors.blue),
                 width: 100,
                 height: 56,
                 padding: EdgeInsets.fromLTRB(0, 0, 0, 0),
@@ -203,8 +205,8 @@ class _HorizontalDataTableState extends State<MyHorizontalDataTable> {
     setState(() {
       int next = columns.length;
       columns.add("Lab $next");
-      for (List<int> v in cells){
-        v.add(0);
+      for (List<TaskInfo> v in cells){
+        v.add(TaskInfo(0));
       }
       _lastColumnTitleChosenIndex = columns.length-1;
       showPopup(context, PopupEditTitles(listener: _changeColumnTitleListener), "Название контрольной точки", width: 500, height: 125);
@@ -214,9 +216,9 @@ class _HorizontalDataTableState extends State<MyHorizontalDataTable> {
     setState(() {
       int next = rows.length+1;
       rows.add("Предмет $next");
-      List<int> newCells = [];
+      List<TaskInfo> newCells = [];
       for (int i=0; i<columns.length-1; i++){
-        newCells.add(0);
+        newCells.add(TaskInfo(0));
       }
       cells.add(newCells);  
       _lastRowTitleChosenIndex = rows.length-1;
@@ -227,7 +229,8 @@ class _HorizontalDataTableState extends State<MyHorizontalDataTable> {
     //setState(() {
     //  cells[i][j] = !cells[i][j];  
     //});
-    
+    _lastCellChosenIndex = [i, j];
+    showPopup(context, PopupTaskInfo(listener: _changeCellInfoListener), "Задание", width: 600,height: 500);
   }
 
   void _changeColumnTitleListener(String value){
@@ -243,6 +246,11 @@ class _HorizontalDataTableState extends State<MyHorizontalDataTable> {
       if (rows.length > _lastRowTitleChosenIndex && value.length > 0){
         rows[_lastRowTitleChosenIndex] = value;
       }
+    });
+  }
+  void _changeCellInfoListener(String value){
+    setState(() {
+      
     });
   }
 
