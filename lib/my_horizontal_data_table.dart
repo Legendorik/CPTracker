@@ -3,8 +3,10 @@ import 'package:homework_task_tracker/popup_task_info.dart';
 import 'package:horizontal_data_table/horizontal_data_table.dart';
 import 'package:intl/intl.dart';
 import 'popup_content.dart';
+import 'popup_authorization.dart';
 import 'popup_edit_titles.dart';
 import 'task_info.dart';
+
 
 class MyHorizontalDataTable extends StatefulWidget {
   MyHorizontalDataTable({Key key}) : super(key: key);
@@ -233,8 +235,9 @@ class _HorizontalDataTableState extends State<MyHorizontalDataTable> {
       }
       _lastColumnTitleChosenIndex = columns.length-1;
       showPopup(context, PopupEditTitles(listener: _changeColumnTitleListener, name: columns[_lastColumnTitleChosenIndex]), 
-                "Название контрольной точки", width: 500, height: 125
+               "Название контрольной точки", width: 500, height: 125
       );
+      //showPopup(context, PopupAuthorization(listener: _authorizationListener), "Авторизация", width: 500, height: 200);
     });
   }
   void _addRow(){
@@ -282,6 +285,11 @@ class _HorizontalDataTableState extends State<MyHorizontalDataTable> {
       cells[_lastCellChosenIndex[0]][_lastCellChosenIndex[1]].state = value.state;
       cells[_lastCellChosenIndex[0]][_lastCellChosenIndex[1]].description = value.description;
       cells[_lastCellChosenIndex[0]][_lastCellChosenIndex[1]].deadline = value.deadline;
+    });
+  }
+  void _authorizationListener(String log, String pass){
+    setState(() {
+      print("success!");
     });
   }
 
