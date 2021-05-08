@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:homework_task_tracker/popup_task_info.dart';
 import 'package:horizontal_data_table/horizontal_data_table.dart';
@@ -9,11 +11,13 @@ import 'task_info.dart';
 
 
 class MyHorizontalDataTable extends StatefulWidget {
-  MyHorizontalDataTable({Key key}) : super(key: key);
+
+  final int filterId;
+  MyHorizontalDataTable({Key key, this.filterId}) : super(key: key);
 
   @override
   State<StatefulWidget> createState() {
-    return _HorizontalDataTableState();
+    return _HorizontalDataTableState(filterId: filterId);
   }
 
 }
@@ -33,25 +37,39 @@ class _HorizontalDataTableState extends State<MyHorizontalDataTable> {
   int _lastColumnTitleChosenIndex;
   List<int> _lastCellChosenIndex;
 
+  int filterId;
+
+  _HorizontalDataTableState({this.filterId}): super();
+
   @override
   Widget build(BuildContext context) {
+    _filterTables();
+    int itemCount = filterId == 0? rows.length+1 : rows.length;
+    double rightHandSideColumnWidth = filterId == 0? (columns.length-1)*100.0+100 : (columns.length-1)*100.0;
     return Container(
       child: HorizontalDataTable(
         leftHandSideColumnWidth: 100,
-        rightHandSideColumnWidth: (columns.length-1)*100.0+100,//MediaQuery.of(context).size.width-100,
+        rightHandSideColumnWidth: rightHandSideColumnWidth,//MediaQuery.of(context).size.width-100,
         isFixedHeader: true,
         headerWidgets: _getTitlesWidget(),
         leftSideItemBuilder: _generateFirstColumnRow,
         rightSideItemBuilder: _generateRightHandSideColumnRow,
-        itemCount: rows.length+1,
+        itemCount: itemCount,
         rowSeparatorWidget: const Divider(
           color: Colors.black54,
-          height: 1.0,
-          thickness: 0.0,
+          height: 0.0,
+          thickness: 1.0,
         ),
       ),
       height: MediaQuery.of(context).size.height,
+      
     );
+  }
+
+  void _filterTables(){
+    if (filterId == 1){
+
+    }
   }
 
   List<Widget> _getTitlesWidget(){
@@ -67,8 +85,8 @@ class _HorizontalDataTableState extends State<MyHorizontalDataTable> {
         child:InkWell(
           child: Container(
             child: Text(columns[i], style: TextStyle(fontWeight: FontWeight.bold)),
-            //width: 100,
-            //height: 56,
+            width: 100,
+            height: 52,
             padding: EdgeInsets.fromLTRB(0, 0, 0, 0),
             alignment: Alignment.center,
 
@@ -86,15 +104,16 @@ class _HorizontalDataTableState extends State<MyHorizontalDataTable> {
       Widget text = Text(columns[i], style: TextStyle(fontWeight: FontWeight.bold));
 
       res.add(Container(
-        child: i == 0? text : button,
+        child: i == 0? text : filterId == 0? button : null,
         width: 100,
-        height: 56,
+        height: 52,
         padding: EdgeInsets.fromLTRB(0, 0, 0, 0),
         alignment: Alignment.center,
       ));
 
     }
-    res.add(_createButton(0));
+    if (filterId == 0)
+      res.add(_createButton(0));
     return res;
   }
 
@@ -112,8 +131,8 @@ class _HorizontalDataTableState extends State<MyHorizontalDataTable> {
         child:InkWell(
           child: Container(
             child: Text(rows[index]),
-            //width: 100,
-            //height: 56,
+            width: 100,
+            height: 52,
             padding: EdgeInsets.fromLTRB(0, 0, 0, 0),
             alignment: Alignment.center,
 
@@ -132,7 +151,7 @@ class _HorizontalDataTableState extends State<MyHorizontalDataTable> {
       return Container(
         child: button,
         width: 100,
-        height: 56,
+        height: 52,
         padding: EdgeInsets.fromLTRB(5, 0, 0, 0),
         alignment: Alignment.centerLeft,
       );
@@ -145,34 +164,37 @@ class _HorizontalDataTableState extends State<MyHorizontalDataTable> {
     List<Widget> cellsList = [];
     if (index < cells.length){
       for (int i=0; i<cells[index].length; i++) {
-        cellsList.add(
-          
-          Material(
-            color: Colors.white,
-            //key: Key("changeCell"),
-            child:InkWell(
-              child: Container(
-                child: _createTableCell(cells[index][i]),
-                width: 100,
-                height: 56,
-                padding: EdgeInsets.fromLTRB(0, 0, 0, 0),
-                alignment: Alignment.center,
-
-              ),
-              onTap: () {
-                //print("tap!");
-                _changeCell(index, i);
-              },
-            )
+        if ((filterId == 0) || (filterId == 1 && cells[index][i].state == 1) || (filterId == 2 && cells[index][i].state == 2))
+          cellsList.add(
             
-          )
-        );
+            Material(
+              color: Colors.white,
+              //key: Key("changeCell"),
+              child:InkWell(
+                child: Container(
+                  child: _createTableCell(cells[index][i], columns[i+1]),
+                  width: 100,
+                  height: 52,
+                  padding: EdgeInsets.fromLTRB(0, 0, 0, 0),
+                  alignment: Alignment.center,
+
+                ),
+                onTap: () {
+                  //print("tap!");
+                  _changeCell(index, i);
+                },
+              )
+              
+            )
+          );
+          
       }
     }
     else {
       for (int i=0; i<columns.length; i++){
-        cellsList.add(Container( width: 100,
-          height: 56,
+        cellsList.add(Container( 
+          width: 100,
+          height: 52,
           padding: EdgeInsets.fromLTRB(0, 0, 0, 0),
           alignment: Alignment.center,)
         );
@@ -190,7 +212,7 @@ class _HorizontalDataTableState extends State<MyHorizontalDataTable> {
         child: Container(
           child: Icon(Icons.add, size: 40, color: Colors.white),
           width: 100,
-          height: 56,
+          height: 52,
           padding: EdgeInsets.fromLTRB(0, 0, 0, 0),
           alignment: Alignment.center,
         ),
@@ -208,9 +230,20 @@ class _HorizontalDataTableState extends State<MyHorizontalDataTable> {
     );
   }
 
-  Widget _createTableCell(TaskInfo info){
+  Widget _createTableCell(TaskInfo info, String title){
+
+    Widget icon = Icon(info.state == 2 ? Icons.check_box: info.state == 1 ? Icons.check_box_outline_blank : Icons.clear, size:20, color: Colors.blue);
+
+    Widget titlePlusIcon = Row(
+      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+      children: [
+        Text(title.substring(0, min(title.length, 6)) + (title.length > 5 ? "..." : ""), style: TextStyle(fontSize: 14)),
+        icon
+      ],
+    );
+
     if (info.deadline == null){
-      return Icon(info.state == 2 ? Icons.check_box: info.state == 1 ? Icons.check_box_outline_blank : Icons.clear, size:20, color: Colors.blue);
+      return filterId == 0 ? icon : titlePlusIcon;
     }
     else{
       DateTime dateTime = info.deadline; // your dateTime object
@@ -219,7 +252,7 @@ class _HorizontalDataTableState extends State<MyHorizontalDataTable> {
       return Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(info.state == 2 ? Icons.check_box: info.state == 1 ? Icons.check_box_outline_blank : Icons.clear, size:20, color: Colors.blue),
+          filterId == 0 ? icon : titlePlusIcon,
           Text(string, style: TextStyle(fontSize: 12))
         ],
       );
