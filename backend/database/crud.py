@@ -43,7 +43,7 @@ async def authenticate_user(username: str, password: str, db: Session) -> Option
     if user is None:
         return None
 
-    if not verify_password(password, user.hash_password):
+    if not await verify_password(password, user.hash_password):
         return None
 
     return user
@@ -67,7 +67,7 @@ async def get_control_points(db: Session, user: models.User):
         user_subject = db.query(models.UserSubject).filter(models.UserSubject.subject_id == subject_id).first()
         if user_subject is not None:
             return user_subject.control_points
-    return None
+    return []
 
 
 async def get_user_subject_control_point(db: Session, user_subject_id: int, control_point_id: int):
