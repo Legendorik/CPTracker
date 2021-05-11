@@ -13,8 +13,9 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
 
-  static Widget dataTable = MyHorizontalDataTable();
+  //static Widget dataTable = MyHorizontalDataTable();
       //DataTable(columnSpacing: 30, columns: columns, rows: rows);
+  int filterId = 0;
 
   @override
   Widget build(BuildContext context) {
@@ -27,7 +28,7 @@ class _MyHomePageState extends State<MyHomePage> {
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisAlignment: MainAxisAlignment.start,
         children:[
-          Expanded(child: dataTable),
+          Expanded(child: MyHorizontalDataTable(key: Key(filterId.toString()), filterId: filterId,)),
         ]
       ),
       bottomNavigationBar: ConvexAppBar(
@@ -39,7 +40,11 @@ class _MyHomePageState extends State<MyHomePage> {
           TabItem(icon: Icons.check_box_outlined),
         ],
         initialActiveIndex: 0 /*optional*/,
-        onTap: (int i) => print('click index=$i'),
+        onTap: (int i) => setState(() {
+          
+          filterId = i;
+          //print("success!" + filterId.toString());
+        }),
       ),
     );
   }
