@@ -35,6 +35,8 @@
 lib/generated_plugin_registrant.dart
 
 # Windows related
+frontend/build
+frontend/windows
 windows/flutter/generated_plugin_registrant.*
 windows/flutter/ephemeral/
 
