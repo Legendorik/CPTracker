@@ -1,15 +1,24 @@
 from pydantic import BaseModel
 from datetime import datetime
-from typing import Optional
+from typing import Optional, List, Dict
 
 
 class Subject(BaseModel):
-    id: int
     short_name: str
     full_name: str
 
     class Config:
         orm_mode = True
+
+
+class DBSubject(Subject):
+    id: int
+
+
+class UserSubject(BaseModel):
+    id: int
+    user_id: int
+    subject_id: int
 
 
 class UserBase(BaseModel):
@@ -32,26 +41,10 @@ class CreateUser(UserBase):
     password: str
 
 
-# class ControlPoint(BaseModel):
-#     id: int
-#     short_name: str
-#     full_name: str
-#
-#     class Config:
-#         orm_mode = True
-#
-#
-# class UserSubjectControlPoint(BaseModel):
-#     id: int
-#     user_subject_id: int
-#     control_point_id: int
-#     deadline: datetime
-#     complete: bool
-#
-#     class Config:
-#         orm_mode = True
-#
-#
+class UserDashboard(BaseModel):
+    user_id: int
+    dashboard: dict[str, dict[str, Optional[dict]]]
+
 
 class Token(BaseModel):
     access_token: str
@@ -60,3 +53,21 @@ class Token(BaseModel):
 
 class TokenData(BaseModel):
     username: Optional[str] = None
+
+
+class TableHeader(BaseModel):
+    id: int
+    short_name: str
+    full_name: str
+
+
+class Cell(BaseModel):
+    status: Optional[bool]
+    description: Optional[str]
+    deadline: datetime
+
+
+class Dashboard(BaseModel):
+    columns: List[TableHeader]
+    rows: List[TableHeader]
+    cells: List[List[Cell]]
