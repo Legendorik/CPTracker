@@ -1,0 +1,4 @@
+io/flutter/plugins/GeneratedPluginRegistrant.java
+ io.flutter.plugins.GeneratedPluginRegistrant
+com/mukhamux/homework_task_tracker/BuildConfig.java
+ com.mukhamux.homework_task_tracker.BuildConfig

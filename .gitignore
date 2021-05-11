@@ -26,17 +26,25 @@
 .dart_tool/
 .flutter-plugins
 .flutter-plugins-dependencies
+<<<<<<< HEAD
 .packages
+=======
+frontend/.packages
+>>>>>>> dev
 .pub-cache/
 .pub/
 /build/
 
 # Web related
+
 lib/generated_plugin_registrant.dart
 
 # Windows related
 windows/flutter/generated_plugin_registrant.*
 windows/flutter/ephemeral/
+
+frontend/lib/generated_plugin_registrant.dart
+
 
 # Symbolication related
 app.*.symbols
@@ -45,9 +53,20 @@ app.*.symbols
 app.*.map.json
 
 # Android Studio will place build artifacts here
+
 /android/app/debug
 /android/app/profile
 /android/app/release
 android/app/src/main/kotlin/com/mukhamux/cp_tracker/MainActivity.kt
 windows/.gitignore
 windows/flutter/generated_plugins.cmake
+
+/frontend/android/app/debug
+/frontend/android/app/profile
+/frontend/android/app/release
+
+# backend section
+backend/.env
+backend/database/__pycache__
+backend/venv
+
