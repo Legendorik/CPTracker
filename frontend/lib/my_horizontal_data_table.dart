@@ -4,11 +4,13 @@ import 'package:flutter/material.dart';
 import 'package:homework_task_tracker/popup_task_info.dart';
 import 'package:horizontal_data_table/horizontal_data_table.dart';
 import 'package:intl/intl.dart';
+import 'dart:async';
 import 'popup_content.dart';
 import 'popup_authorization.dart';
 import 'popup_edit_titles.dart';
 import 'task_info.dart';
-
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 
 class MyHorizontalDataTable extends StatefulWidget {
 
@@ -24,18 +26,25 @@ class MyHorizontalDataTable extends StatefulWidget {
 
 class _HorizontalDataTableState extends State<MyHorizontalDataTable> {
 
-  static List<String> columns = ["Предмет", "Lab1", "Lab2", "Lab3", "Lab4", "Lab5", "Lab6", "Lab7"];
-  static List<String> rows = ["Математика", "Русский", "Информатика", "Физика"];
+  static List<String> columns = ["Предмет"];
+  static List<String> rows = [];
   static List<List<TaskInfo>> cells = [ //0 - no task, 1 - in progress, 2 - completed
-    [TaskInfo(1), TaskInfo(2), TaskInfo(1), TaskInfo(2), TaskInfo(2), TaskInfo(0), TaskInfo(0)],
-    [TaskInfo(1), TaskInfo(2), TaskInfo(1), TaskInfo(1), TaskInfo(2), TaskInfo(1), TaskInfo(1)],
-    [TaskInfo(2), TaskInfo(2), TaskInfo(2), TaskInfo(2), TaskInfo(2), TaskInfo(1), TaskInfo(1)],
-    [TaskInfo(2), TaskInfo(2), TaskInfo(2), TaskInfo(1), TaskInfo(2), TaskInfo(1), TaskInfo(1)]
+
   ];
+
+  // static List<String> columns = ["Предмет", "Lab1", "Lab2", "Lab3", "Lab4", "Lab5", "Lab6", "Lab7"];
+  // static List<String> rows = ["Математика", "Русский", "Информатика", "Физика"];
+  // static List<List<TaskInfo>> cells = [ //0 - no task, 1 - in progress, 2 - completed
+  //   [TaskInfo(1), TaskInfo(2), TaskInfo(1), TaskInfo(2), TaskInfo(2), TaskInfo(0), TaskInfo(0)],
+  //   [TaskInfo(1), TaskInfo(2), TaskInfo(1), TaskInfo(1), TaskInfo(2), TaskInfo(1), TaskInfo(1)],
+  //   [TaskInfo(2), TaskInfo(2), TaskInfo(2), TaskInfo(2), TaskInfo(2), TaskInfo(1), TaskInfo(1)],
+  //   [TaskInfo(2), TaskInfo(2), TaskInfo(2), TaskInfo(1), TaskInfo(2), TaskInfo(1), TaskInfo(1)]
+  // ];
 
   int _lastRowTitleChosenIndex;
   int _lastColumnTitleChosenIndex;
   List<int> _lastCellChosenIndex;
+  String token;
 
   int filterId;
 
@@ -43,9 +52,14 @@ class _HorizontalDataTableState extends State<MyHorizontalDataTable> {
 
   @override
   Widget build(BuildContext context) {
-    _filterTables();
+
     int itemCount = filterId == 0? rows.length+1 : rows.length;
     double rightHandSideColumnWidth = filterId == 0? (columns.length-1)*100.0+100 : (columns.length-1)*100.0;
+    if (token == null){
+      Timer(Duration(milliseconds: 200), (){
+        showPopup(context, PopupAuthorization(listener: _authorizationListener), "Авторизация", width: 500, height: 200, needBackButton: false);
+      });
+    }
     return Container(
       child: HorizontalDataTable(
         leftHandSideColumnWidth: 100,
@@ -66,11 +80,6 @@ class _HorizontalDataTableState extends State<MyHorizontalDataTable> {
     );
   }
 
-  void _filterTables(){
-    if (filterId == 1){
-
-    }
-  }
 
   List<Widget> _getTitlesWidget(){
     //TODO get title list from server 
@@ -270,7 +279,6 @@ class _HorizontalDataTableState extends State<MyHorizontalDataTable> {
       showPopup(context, PopupEditTitles(listener: _changeColumnTitleListener, name: columns[_lastColumnTitleChosenIndex]), 
                "Название контрольной точки", width: 500, height: 125
       );
-      //showPopup(context, PopupAuthorization(listener: _authorizationListener), "Авторизация", width: 500, height: 200);
     });
   }
   void _addRow(){
@@ -284,7 +292,7 @@ class _HorizontalDataTableState extends State<MyHorizontalDataTable> {
       cells.add(newCells);  
       _lastRowTitleChosenIndex = rows.length-1;
       showPopup(context, PopupEditTitles(listener: _changeRowTitleListener, name: rows[_lastRowTitleChosenIndex]), 
-                "Название предмета", width: 500,height: 125
+                "Название предмета", width: 500,height: 125, needBackButton: false
       );
     });
   }
@@ -320,10 +328,53 @@ class _HorizontalDataTableState extends State<MyHorizontalDataTable> {
       cells[_lastCellChosenIndex[0]][_lastCellChosenIndex[1]].deadline = value.deadline;
     });
   }
-  void _authorizationListener(String log, String pass){
-    setState(() {
-      print("success!");
-    });
+
+  Future<void> _authorizationListener(String token) async {
+
+    if (token != null){
+      try {
+        var response = await http.post(Uri.parse('http://localhost:8000/get_dashboard'), 
+          headers: {
+            "Authorization": "Bearer $token",
+            "charset": "utf-8",
+            
+          }
+        );
+        setState(() {
+          this.token = token;
+          print("Response status: ${response.statusCode}");
+          print("Response body: ${response.body}");
+          var body = json.decode(utf8.decode(response.body.codeUnits));
+          List<String> newRows = [];
+          List<String> newColumns = ["Предмет"];
+          List<List<TaskInfo>> newCells = [];
+          for (var v in body["rows"]){ //id, short_name, name
+            print(v[2]);
+            newRows.add(v[2]);
+          }
+          for (var v in body["columns"]){ //id, short_name, name
+            newColumns.add(v[2]);
+          }
+          for (var v in body["cells"]){ //id, short_name, name
+            //newColumns.add(v[2]);
+          }
+          rows = newRows;
+          columns = newColumns;
+          cells = newCells;
+          
+        });
+      } catch (err){
+        print(err);
+      }
+      
+
+    }
+    else {
+      //recall authorization window
+      showPopup(context, PopupAuthorization(listener: _authorizationListener), "Авторизация", width: 500, height: 200, needBackButton: false);
+    }
+    
+
   }
 
   

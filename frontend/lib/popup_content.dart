@@ -28,7 +28,8 @@ class _PopupContentState extends State<PopupContent> {
 }
 
 showPopup(BuildContext context, Widget widget, String title,
-    {double width, double height, BuildContext popupContext}) {
+    {double width, double height, bool needBackButton=true, BuildContext popupContext}) {
+      print(needBackButton);
   Navigator.push(
     context,
     PopupLayout(
@@ -42,7 +43,8 @@ showPopup(BuildContext context, Widget widget, String title,
         content: Scaffold(
           appBar: AppBar(
             title: Text(title),
-            leading: new Builder(builder: (context) {
+            automaticallyImplyLeading: false,
+            leading: needBackButton? new Builder(builder: (context) {
               return IconButton(
                 icon: Icon(Icons.arrow_back),
                 onPressed: () {
@@ -51,7 +53,7 @@ showPopup(BuildContext context, Widget widget, String title,
                   } catch (e) {}
                 },
               );
-            }),
+            }) : null,
             brightness: Brightness.light,
           ),
           //resizeToAvoidBottomInset: false,
