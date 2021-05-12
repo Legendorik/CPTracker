@@ -17,11 +17,13 @@ import 'short_long_name.dart';
 class MyHorizontalDataTable extends StatefulWidget {
 
   final int filterId;
-  MyHorizontalDataTable({Key key, this.filterId}) : super(key: key);
+  final Function(String) tokenSetter;
+  final String token;
+  MyHorizontalDataTable({Key key, this.filterId, this.token, this.tokenSetter}) : super(key: key);
 
   @override
   State<StatefulWidget> createState() {
-    return _HorizontalDataTableState(filterId: filterId);
+    return _HorizontalDataTableState(filterId: filterId, token: token, tokenSetter: this.tokenSetter);
   }
 
 }
@@ -51,10 +53,11 @@ class _HorizontalDataTableState extends State<MyHorizontalDataTable> {
   int _lastColumnTitleChosenIndex;
   List<int> _lastCellChosenIndex;
   String token;
+  Function(String) tokenSetter;
 
   int filterId;
 
-  _HorizontalDataTableState({this.filterId}): super();
+  _HorizontalDataTableState({this.filterId, this.token, this.tokenSetter}): super();
 
   @override
   Widget build(BuildContext context) {
@@ -251,6 +254,7 @@ class _HorizontalDataTableState extends State<MyHorizontalDataTable> {
 
     Widget titlePlusIcon = Row(
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+      crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         Text(title.substring(0, min(title.length, 6)) + (title.length > 5 ? "..." : ""), style: TextStyle(fontSize: 14)),
         icon
@@ -387,6 +391,7 @@ class _HorizontalDataTableState extends State<MyHorizontalDataTable> {
         );
         setState(() {
           this.token = token;
+          tokenSetter(token); // передача вышестоящему виджету
           //print("Response status: ${response.statusCode}");
           //print("Response body: ${response.body}");
           var body = json.decode(utf8.decode(response.body.codeUnits));

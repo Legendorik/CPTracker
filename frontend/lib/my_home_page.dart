@@ -16,7 +16,7 @@ class _MyHomePageState extends State<MyHomePage> {
   //static Widget dataTable = MyHorizontalDataTable();
       //DataTable(columnSpacing: 30, columns: columns, rows: rows);
   int filterId = 0;
-
+  String token;
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -28,7 +28,7 @@ class _MyHomePageState extends State<MyHomePage> {
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisAlignment: MainAxisAlignment.start,
         children:[
-          Expanded(child: MyHorizontalDataTable(key: Key(filterId.toString()), filterId: filterId,)),
+          Expanded(child: MyHorizontalDataTable(key: Key(filterId.toString()), filterId: filterId, token: token, tokenSetter: _setToken)),
         ]
       ),
       bottomNavigationBar: ConvexAppBar(
@@ -47,6 +47,10 @@ class _MyHomePageState extends State<MyHomePage> {
         }),
       ),
     );
+  }
+
+  _setToken(String myToken){
+    token = myToken;
   }
 
 }
