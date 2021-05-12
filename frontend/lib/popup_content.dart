@@ -29,7 +29,7 @@ class _PopupContentState extends State<PopupContent> {
 
 showPopup(BuildContext context, Widget widget, String title,
     {double width, double height, bool needBackButton=true, BuildContext popupContext}) {
-      print(needBackButton);
+
   Navigator.push(
     context,
     PopupLayout(

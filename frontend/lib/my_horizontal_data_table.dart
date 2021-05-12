@@ -11,6 +11,8 @@ import 'popup_edit_titles.dart';
 import 'task_info.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'short_long_name.dart';
+
 
 class MyHorizontalDataTable extends StatefulWidget {
 
@@ -26,8 +28,12 @@ class MyHorizontalDataTable extends StatefulWidget {
 
 class _HorizontalDataTableState extends State<MyHorizontalDataTable> {
 
-  static List<String> columns = ["Предмет"];
-  static List<String> rows = [];
+  static const double authorizationWindowHeight = 270;
+  static const double editTitlesWindowHeight = 320;
+  static const double taskInfoWindowHeight = 475;
+
+  static List<ShortLongName> columns = [ShortLongName("Предмет")];
+  static List<ShortLongName> rows = [];
   static List<List<TaskInfo>> cells = [ //0 - no task, 1 - in progress, 2 - completed
 
   ];
@@ -57,7 +63,7 @@ class _HorizontalDataTableState extends State<MyHorizontalDataTable> {
     double rightHandSideColumnWidth = filterId == 0? (columns.length-1)*100.0+100 : (columns.length-1)*100.0;
     if (token == null){
       Timer(Duration(milliseconds: 200), (){
-        showPopup(context, PopupAuthorization(listener: _authorizationListener), "Авторизация", width: 500, height: 200, needBackButton: false);
+        showPopup(context, PopupAuthorization(listener: _authorizationListener), "Авторизация", width: 500, height: authorizationWindowHeight, needBackButton: false);
       });
     }
     return Container(
@@ -93,7 +99,7 @@ class _HorizontalDataTableState extends State<MyHorizontalDataTable> {
         color: Colors.white,
         child:InkWell(
           child: Container(
-            child: Text(columns[i], style: TextStyle(fontWeight: FontWeight.bold)),
+            child: Text(columns[i].shortName, style: TextStyle(fontWeight: FontWeight.bold)),
             width: 100,
             height: 52,
             padding: EdgeInsets.fromLTRB(0, 0, 0, 0),
@@ -103,14 +109,14 @@ class _HorizontalDataTableState extends State<MyHorizontalDataTable> {
           onTap: () {
             _lastColumnTitleChosenIndex = i;
             //print(columns[i]);
-            showPopup(context, PopupEditTitles(listener: _changeColumnTitleListener, name: columns[_lastColumnTitleChosenIndex]), 
-                      "Название контрольной точки", width: 500, height: 125
+            showPopup(context, PopupEditTitles(listener: _changeColumnTitleListener, title: columns[_lastColumnTitleChosenIndex]), 
+                      "Название контрольной точки", width: 500, height: editTitlesWindowHeight
             );
           },
         )
         
       );
-      Widget text = Text(columns[i], style: TextStyle(fontWeight: FontWeight.bold));
+      Widget text = Text(columns[i].shortName, style: TextStyle(fontWeight: FontWeight.bold));
 
       res.add(Container(
         child: i == 0? text : filterId == 0? button : null,
@@ -139,7 +145,7 @@ class _HorizontalDataTableState extends State<MyHorizontalDataTable> {
         color: Colors.white,
         child:InkWell(
           child: Container(
-            child: Text(rows[index]),
+            child: Text(rows[index].shortName),
             width: 100,
             height: 52,
             padding: EdgeInsets.fromLTRB(0, 0, 0, 0),
@@ -148,8 +154,8 @@ class _HorizontalDataTableState extends State<MyHorizontalDataTable> {
           ),
           onTap: () {
             _lastRowTitleChosenIndex = index;
-            showPopup(context, PopupEditTitles(listener: _changeRowTitleListener, name: rows[_lastRowTitleChosenIndex]), 
-                      "Название предмета", width: 500,height: 125
+            showPopup(context, PopupEditTitles(listener: _changeRowTitleListener, title: rows[_lastRowTitleChosenIndex]), 
+                      "Название предмета", width: 500,height: editTitlesWindowHeight
             );
           },
         )
@@ -181,7 +187,7 @@ class _HorizontalDataTableState extends State<MyHorizontalDataTable> {
               //key: Key("changeCell"),
               child:InkWell(
                 child: Container(
-                  child: _createTableCell(cells[index][i], columns[i+1]),
+                  child: _createTableCell(cells[index][i], columns[i+1].shortName),
                   width: 100,
                   height: 52,
                   padding: EdgeInsets.fromLTRB(0, 0, 0, 0),
@@ -271,28 +277,28 @@ class _HorizontalDataTableState extends State<MyHorizontalDataTable> {
   void _addColumn(){
     setState(() {
       int next = columns.length;
-      columns.add("Lab $next");
+      columns.add(ShortLongName("Лаб $next"));
       for (List<TaskInfo> v in cells){
         v.add(TaskInfo(0));
       }
       _lastColumnTitleChosenIndex = columns.length-1;
-      showPopup(context, PopupEditTitles(listener: _changeColumnTitleListener, name: columns[_lastColumnTitleChosenIndex]), 
-               "Название контрольной точки", width: 500, height: 125
+      showPopup(context, PopupEditTitles(listener: _changeColumnTitleListener, title: columns[_lastColumnTitleChosenIndex]), 
+               "Название контрольной точки", width: 500, height: editTitlesWindowHeight, needBackButton: false
       );
     });
   }
   void _addRow(){
     setState(() {
       int next = rows.length+1;
-      rows.add("Предмет $next");
+      rows.add(ShortLongName("Предмет $next"));
       List<TaskInfo> newCells = [];
       for (int i=0; i<columns.length-1; i++){
         newCells.add(TaskInfo(0));
       }
       cells.add(newCells);  
       _lastRowTitleChosenIndex = rows.length-1;
-      showPopup(context, PopupEditTitles(listener: _changeRowTitleListener, name: rows[_lastRowTitleChosenIndex]), 
-                "Название предмета", width: 500,height: 125, needBackButton: false
+      showPopup(context, PopupEditTitles(listener: _changeRowTitleListener, title: rows[_lastRowTitleChosenIndex]), 
+                "Название предмета", width: 500,height: editTitlesWindowHeight, needBackButton: false
       );
     });
   }
@@ -301,21 +307,45 @@ class _HorizontalDataTableState extends State<MyHorizontalDataTable> {
     //  cells[i][j] = !cells[i][j];  
     //});
     _lastCellChosenIndex = [i, j];
-    showPopup(context, PopupTaskInfo(listener: _changeCellInfoListener, taskInfo: cells[i][j]), "Задание " + rows[i] + " " + columns[j+1], width: 600,height: 475);
+    showPopup(context, PopupTaskInfo(listener: _changeCellInfoListener, taskInfo: cells[i][j]), "Задание " + rows[i].shortName + " " + columns[j+1].shortName, width: 600,height: taskInfoWindowHeight);
   }
 
-  void _changeColumnTitleListener(String value){
+  void _changeColumnTitleListener(ShortLongName value){
     setState(() {
-      if (columns.length > _lastColumnTitleChosenIndex && value.length > 0){
+      if (columns.length > _lastColumnTitleChosenIndex){
         columns[_lastColumnTitleChosenIndex] = value;
       }
     });
   }
-  void _changeRowTitleListener(String value){
+  Future<void> _changeRowTitleListener(ShortLongName value) async {
+
+    if (value.id == -1){ //только что добавленный предмет
+      try {
+        var response = await http.post(Uri.parse('http://localhost:8000/subject'), 
+          headers: {
+            "Authorization": "Bearer $token",
+            "charset": "utf-8", 
+          },
+          body: json.encode({
+            "short_name": value.shortName,
+            "full_name": value.longName
+          })
+      
+        );
+        print("Response status: ${response.statusCode}");
+        print("Response body: ${response.body}");
+        //add real id
+        value.id = 0;
+      } catch (err){
+        print(err);
+      }
+    }
+
     setState(() {
       //print(_lastRowTitleChosenIndex);
-      if (rows.length > _lastRowTitleChosenIndex && value.length > 0){
+      if (rows.length > _lastRowTitleChosenIndex){
         rows[_lastRowTitleChosenIndex] = value;
+        
       }
     });
   }
@@ -342,21 +372,23 @@ class _HorizontalDataTableState extends State<MyHorizontalDataTable> {
         );
         setState(() {
           this.token = token;
-          print("Response status: ${response.statusCode}");
-          print("Response body: ${response.body}");
+          //print("Response status: ${response.statusCode}");
+          //print("Response body: ${response.body}");
           var body = json.decode(utf8.decode(response.body.codeUnits));
-          List<String> newRows = [];
-          List<String> newColumns = ["Предмет"];
+          List<ShortLongName> newRows = [];
+          List<ShortLongName> newColumns = [ShortLongName("Предмет")];
           List<List<TaskInfo>> newCells = [];
           for (var v in body["rows"]){ //id, short_name, name
-            print(v[2]);
-            newRows.add(v[2]);
+            newRows.add(ShortLongName.full(v[2], v[1], v[0]));
           }
           for (var v in body["columns"]){ //id, short_name, name
-            newColumns.add(v[2]);
+            newColumns.add(ShortLongName.full(v[2], v[1], v[0]));
+            
           }
           for (var v in body["cells"]){ //id, short_name, name
-            //newColumns.add(v[2]);
+
+            newCells.add([]);
+            //продолжение добавления
           }
           rows = newRows;
           columns = newColumns;
@@ -371,7 +403,7 @@ class _HorizontalDataTableState extends State<MyHorizontalDataTable> {
     }
     else {
       //recall authorization window
-      showPopup(context, PopupAuthorization(listener: _authorizationListener), "Авторизация", width: 500, height: 200, needBackButton: false);
+      showPopup(context, PopupAuthorization(listener: _authorizationListener), "Авторизация", width: 500, height: authorizationWindowHeight, needBackButton: false);
     }
     
 

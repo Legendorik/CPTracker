@@ -40,7 +40,12 @@ class _PopupAuthorizationState extends State<PopupAuthorization>{
   Widget build(BuildContext context) {
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        Container(
+          padding: EdgeInsets.fromLTRB(10, 5, 0, 5), 
+          child: Text("Логин", style: TextStyle(fontSize: 16) )
+        ),
         Container(
           child:
             TextField(
@@ -72,6 +77,10 @@ class _PopupAuthorizationState extends State<PopupAuthorization>{
 
             ),
             
+        ),
+        Container(
+          padding: EdgeInsets.fromLTRB(10, 5, 0, 5), 
+          child: Text("Пароль", style: TextStyle(fontSize: 16) )
         ),
         Container(
           child: TextField(
