@@ -23,8 +23,8 @@ class _PopupAuthorizationState extends State<PopupAuthorization>{
   TextEditingController _controllerLogin;
   TextEditingController _controllerPass;
   _PopupAuthorizationState({this.listener}): super() {
-    _login = "";
-    _pass = "";
+    _login = "mukhamux";
+    _pass = "secret";
     _controllerLogin = TextEditingController.fromValue(new TextEditingValue(text: _login));
     _controllerPass = TextEditingController.fromValue(new TextEditingValue(text: _login,));
   }

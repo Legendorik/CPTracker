@@ -4,11 +4,12 @@ import 'short_long_name.dart';
 class PopupEditTitles extends StatefulWidget {
 
   final Function(ShortLongName) listener;
+  final Function() deleteListener;
   final ShortLongName title;
-  const PopupEditTitles({Key key, this.listener, this.title}): super(key: key);
+  const PopupEditTitles({Key key, this.listener, this.deleteListener, this.title}): super(key: key);
   @override
   State<StatefulWidget> createState() {
-    return _PopupEditTitlesState(listener: listener, title: title);
+    return _PopupEditTitlesState(listener: listener, deleteListener: deleteListener, title: title);
   } 
 
 } 
@@ -16,16 +17,16 @@ class PopupEditTitles extends StatefulWidget {
 class _PopupEditTitlesState extends State<PopupEditTitles>{
 
   final Function(ShortLongName) listener;
+  final Function() deleteListener;
   ShortLongName title;
   ShortLongName newTitle;
 
   TextEditingController _controllerShort;
   TextEditingController _controllerLong;
-  _PopupEditTitlesState({this.listener, this.title}): super() {
+  _PopupEditTitlesState({this.listener, this.deleteListener, this.title}): super() {
     newTitle = ShortLongName.full(title.longName, title.shortName, title.id);
     _controllerLong = TextEditingController.fromValue(new TextEditingValue(text: newTitle.longName));
     _controllerShort = TextEditingController.fromValue(new TextEditingValue(text: newTitle.shortName));
-
     
   }
 
@@ -64,7 +65,7 @@ class _PopupEditTitlesState extends State<PopupEditTitles>{
                   primary: Colors.red, // background
                   onPrimary: Colors.white, // foreground
                 ),
-                onPressed: _onPressedSaveButton, 
+                onPressed: _onPressedDeleteButton, 
                 child: Text("Удалить")
               )
             ),
@@ -123,6 +124,12 @@ class _PopupEditTitlesState extends State<PopupEditTitles>{
   void _onPressedSaveButton() {
 
     listener(newTitle);
+    Navigator.pop(context);
+  }
+
+  void _onPressedDeleteButton() {
+    print("AAAAAAAAAAAAAAAAAAAA");
+    deleteListener();
     Navigator.pop(context);
   }
 }

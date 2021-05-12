@@ -109,7 +109,7 @@ class _HorizontalDataTableState extends State<MyHorizontalDataTable> {
           onTap: () {
             _lastColumnTitleChosenIndex = i;
             //print(columns[i]);
-            showPopup(context, PopupEditTitles(listener: _changeColumnTitleListener, title: columns[_lastColumnTitleChosenIndex]), 
+            showPopup(context, PopupEditTitles(listener: _changeColumnTitleListener, deleteListener: _deleteColumnListener, title: columns[_lastColumnTitleChosenIndex]), 
                       "Название контрольной точки", width: 500, height: editTitlesWindowHeight
             );
           },
@@ -154,7 +154,7 @@ class _HorizontalDataTableState extends State<MyHorizontalDataTable> {
           ),
           onTap: () {
             _lastRowTitleChosenIndex = index;
-            showPopup(context, PopupEditTitles(listener: _changeRowTitleListener, title: rows[_lastRowTitleChosenIndex]), 
+            showPopup(context, PopupEditTitles(listener: _changeRowTitleListener, deleteListener: _deleteRowListener, title: rows[_lastRowTitleChosenIndex]), 
                       "Название предмета", width: 500,height: editTitlesWindowHeight
             );
           },
@@ -282,7 +282,7 @@ class _HorizontalDataTableState extends State<MyHorizontalDataTable> {
         v.add(TaskInfo(0));
       }
       _lastColumnTitleChosenIndex = columns.length-1;
-      showPopup(context, PopupEditTitles(listener: _changeColumnTitleListener, title: columns[_lastColumnTitleChosenIndex]), 
+      showPopup(context, PopupEditTitles(listener: _changeColumnTitleListener, deleteListener: _deleteColumnListener, title: columns[_lastColumnTitleChosenIndex]), 
                "Название контрольной точки", width: 500, height: editTitlesWindowHeight, needBackButton: false
       );
     });
@@ -297,11 +297,26 @@ class _HorizontalDataTableState extends State<MyHorizontalDataTable> {
       }
       cells.add(newCells);  
       _lastRowTitleChosenIndex = rows.length-1;
-      showPopup(context, PopupEditTitles(listener: _changeRowTitleListener, title: rows[_lastRowTitleChosenIndex]), 
+      showPopup(context, PopupEditTitles(listener: _changeRowTitleListener, deleteListener: _deleteRowListener, title: rows[_lastRowTitleChosenIndex]), 
                 "Название предмета", width: 500,height: editTitlesWindowHeight, needBackButton: false
       );
     });
   }
+  void _deleteColumnListener(){
+    setState(() {
+      for (List<TaskInfo> v in cells){
+        v.removeAt(_lastColumnTitleChosenIndex-1);
+      }
+      columns.removeAt(_lastColumnTitleChosenIndex);
+    });
+  }
+  void _deleteRowListener(){
+    setState(() {
+      cells.removeAt(_lastRowTitleChosenIndex);
+      rows.removeAt(_lastRowTitleChosenIndex);
+    });
+  }
+
   void _changeCell(int i, int j){
     //setState(() {
     //  cells[i][j] = !cells[i][j];  
