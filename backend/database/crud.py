@@ -142,3 +142,15 @@ async def add_control_points_to_user_subject(user: models.User, user_subject: mo
             ))
         db.commit()
 
+
+async def update_old_subject_for_user(user: models.User, new_subject: models.Subject,
+                                                old_subject: models.Subject, db: Session):
+    user_subject = db.query(models.UserSubject).filter(
+        models.UserSubject.user_id == user.id,
+        models.UserSubject.subject_id == old_subject.id,
+    ).first()
+    if user_subject is None:
+        raise ValueError(f"user <{user.username}> hasn't <{old_subject.full_name}> subject")
+
+    user_subject.subject_id = new_subject.id
+    return user_subject

@@ -63,15 +63,24 @@ async def create_subject(subject: schemas.Subject, token: str = Depends(oauth2_s
     user: models.User = await crud.get_user_by_token(token, db)
     try:
         user_subject: models.UserSubject = await crud.add_subject_to_user(new_subject, user, db)
-        await crud.add_control_points_to_user_subject(user, user_subject, db)
     except ValueError as e:
         return {"error": True, "error_type": str(e)}
+    await crud.add_control_points_to_user_subject(user, user_subject, db)
     return await sign_in(token, db)
 
 
 @app.put("/subject")
-async def change_subject():
-    pass
+async def change_subject(old_subject: schemas.Subject, new_subject: schemas.Subject,
+                         token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)):
+    new_subject = await crud.get_or_create(new_subject, db)
+    old_subject = await crud.get_or_create(old_subject, db)
+    user: models.User = await crud.get_user_by_token(token, db)
+    try:
+        user_subject = await crud.update_old_subject_for_user(user, new_subject, old_subject, db)
+    except ValueError as e:
+        return {"error": True, "error_type": str(e)}
+    await crud.add_control_points_to_user_subject(user, user_subject, db)
+    return await sign_in(token, db)
 
 
 @app.delete("/subject")
