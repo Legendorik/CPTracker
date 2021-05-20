@@ -11,7 +11,7 @@ class UserSubjectControlPoint(Base):
     deadline = Column("deadline", DateTime, nullable=False)
     description = Column("description", String(100))
     complete = Column("complete", Boolean, default=None)
-    column_number = Column("column_number", BigInteger)
+    column_number = Column("column_number", BigInteger, nullable=False)
 
     __table_args__ = (
         CheckConstraint("deadline > current_date + 1", name="deadline_in_future"),
@@ -25,7 +25,7 @@ class UserSubject(Base):
     id = Column("id", BigInteger, primary_key=True)
     user_id = Column("user_id", BigInteger, ForeignKey("User.id"))
     subject_id = Column("subject_id", BigInteger, ForeignKey("Subject.id"))
-    row_number = Column("row_number", BigInteger)
+    row_number = Column("row_number", BigInteger, nullable=False)
     control_points = relationship("ControlPoint", secondary="UserSubjectControlPoint", back_populates="users_subjects")
 
     __table_args__ = (
