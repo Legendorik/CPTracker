@@ -1,4 +1,4 @@
-from sqlalchemy import Boolean, Column, ForeignKey, String, BigInteger, DateTime, CheckConstraint
+from sqlalchemy import Boolean, Column, ForeignKey, String, BigInteger, DateTime, CheckConstraint, UniqueConstraint
 from sqlalchemy.orm import relationship
 from .database import Base
 
@@ -39,9 +39,11 @@ class Subject(Base):
     __tablename__ = "Subject"
 
     id = Column("id", BigInteger, primary_key=True)
-    short_name = Column("short_name", String(10), unique=True, nullable=False)
-    full_name = Column("full_name", String(70), unique=True, nullable=False)
+    short_name = Column("short_name", String(10), nullable=False)
+    full_name = Column("full_name", String(70), nullable=False)
     users = relationship(User, secondary="UserSubject", back_populates="subjects")
+
+    __table_args__ = (UniqueConstraint('short_name', 'full_name', name='short_full_name_constraint'),)
 
 
 class ControlPoint(Base):
