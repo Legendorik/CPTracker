@@ -56,7 +56,6 @@ class TokenData(BaseModel):
 
 
 class TableHeader(BaseModel):
-    id: int
     short_name: str
     full_name: str
 
