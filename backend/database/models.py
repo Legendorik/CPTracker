@@ -5,7 +5,6 @@ from .database import Base
 
 class UserSubjectControlPoint(Base):
     __tablename__ = "UserSubjectControlPoint"
-    id = Column("id", BigInteger, primary_key=True)
     user_subject_id = Column("user_subject_id", BigInteger, ForeignKey("UserSubject.id"), primary_key=True)
     control_point_id = Column("control_point_id", BigInteger, ForeignKey("ControlPoint.id"), primary_key=True)
     deadline = Column("deadline", DateTime, nullable=False)
