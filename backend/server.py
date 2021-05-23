@@ -71,8 +71,17 @@ async def change_subject(old_subject: schemas.Subject, new_subject: schemas.Subj
 
 
 @app.delete("/subject")
-async def delete_subject():
-    pass
+async def delete_subject(subject: schemas.TableHeader, token: str = Depends(oauth2_scheme),
+                         db: Session = Depends(get_db)):
+    slave = Slave(token, db)
+    try:
+        slave.action(Action.DELETE, Entity.SUBJECT, subject=subject)
+    except ValueError as e:
+        return {"error": True, "error_type": str(e)}
+    except Exception as e:
+        return {"error": True, "error_type": str(e)}
+    else:
+        return await sign_in(token, db)
 
 
 @app.post("/control_point")

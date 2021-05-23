@@ -133,6 +133,11 @@ class Slave:
                 new_control_point = kwargs.get("new_control_point")
                 self.__change_control_point(old_control_point, new_control_point)
 
+        elif action == Action.DELETE:
+            if entity == Entity.SUBJECT:
+                subject = kwargs.get("subject")
+                self.__delete_subject(subject)
+
     def __change_subject(self, old_subject: schemas.Subject, new_subject: schemas.Subject):
         # 1. Проверяем существует ли старый предмет в базе.
         subject = self.db.query(models.Subject).filter(
@@ -170,6 +175,35 @@ class Slave:
 
         # 4. Меняем subject_id в user_subject
         user_subject.subject_id = new_subject_db.id
+        self.db.commit()
+
+    def __delete_subject(self, subject):
+        # 1. Проверяем есть ли такой предмет в базе
+        db_subject = self.db.query(models.Subject).filter(
+            models.Subject.short_name == subject.short_name,
+            models.Subject.full_name == subject.full_name,
+        ).first()
+        if db_subject is None:
+            raise ValueError(f"<{subject.full_name}> subject not in database")
+        # 2. Проверяем есть ли такой преддмет у пользователя
+        if db_subject not in self.user.subjects:
+            raise ValueError(f"user <{self.user.username}> hasn't got <{subject.full_name}> subject")
+        # нам необходимо не удалить предмет, а разорвать связь между m2m таблицами
+        # 3. Достаём связь пользователя и данного предмета
+        user_subject = self.db.query(models.UserSubject).filter(
+            models.UserSubject.user_id == self.user.id,
+            models.UserSubject.subject_id == db_subject.id,
+        ).first()
+
+        control_points = self.__get_user_subject_control_points()
+        # 4. Разрываем свзяь между user_subject и control_point
+        for control_point in control_points:
+            if control_point.user_subject_id == user_subject.id:
+                self.db.delete(control_point)
+        self.db.commit()
+
+        # 5. Разрываем связь между пользователем и предметом
+        self.db.delete(user_subject)
         self.db.commit()
 
     def __change_control_point(self, old_control_point, new_control_point):
