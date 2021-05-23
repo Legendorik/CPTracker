@@ -49,13 +49,15 @@ class Subject(Base):
     full_name = Column("full_name", String(70), nullable=False)
     users = relationship(User, secondary="UserSubject", back_populates="subjects")
 
-    __table_args__ = (UniqueConstraint('short_name', 'full_name', name='short_full_name_constraint'),)
+    __table_args__ = (UniqueConstraint('short_name', 'full_name', name='subject_name_constraint'),)
 
 
 class ControlPoint(Base):
     __tablename__ = "ControlPoint"
 
     id = Column("id", BigInteger, primary_key=True)
-    short_name = Column("short_name", String(10), unique=True, nullable=False)
-    full_name = Column("full_name", String(70), unique=True, nullable=False)
+    short_name = Column("short_name", String(10), nullable=False)
+    full_name = Column("full_name", String(70), nullable=False)
     users_subjects = relationship(UserSubject, secondary="UserSubjectControlPoint", back_populates="control_points")
+
+    __table_args__ = (UniqueConstraint('short_name', 'full_name', name='control_point_name_constraint'),)
