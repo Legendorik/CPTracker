@@ -63,36 +63,6 @@ async def create_access_token(data: dict, expires_delta: Optional[timedelta] = N
     return encoded_jwt
 
 
-async def get_control_points(db: Session, user: models.User):
-    subjects = user.subjects
-    if len(subjects):
-        subject_id = subjects[0].id
-        user_subject = db.query(models.UserSubject).filter(models.UserSubject.subject_id == subject_id).first()
-        if user_subject is not None:
-            return user_subject.control_points
-    return []
-
-
-async def get_user_subject_control_point(db: Session, user_subject_id: int, control_point_id: int):
-    info = db.query(models.UserSubjectControlPoint).filter(
-        models.UserSubjectControlPoint.control_point_id == control_point_id,
-        models.UserSubjectControlPoint.user_subject_id == user_subject_id,
-    ).first()
-    return info
-
-
-async def get_user_subjects(user_id: int, db: Session):
-    user_subjects = db.query(models.UserSubject)\
-        .filter(models.UserSubject.user_id == user_id)\
-        .order_by(models.UserSubject.row_number)\
-        .all()
-    result = []
-    for user_subject in user_subjects:
-        subject = db.query(models.Subject).get(user_subject.subject_id)
-        result.append([subject.id, subject.short_name, subject.full_name, user_subject.row_number])
-    return result
-
-
 async def get_user_by_token(token: str, db: Session) -> models.User:
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
@@ -112,98 +82,6 @@ async def get_user_by_token(token: str, db: Session) -> models.User:
         raise credentials_exception
 
     return user
-
-
-async def get_or_create(subject: schemas.Subject, db: Session) -> models.Subject:
-    new_subject = db.query(models.Subject).filter(
-        models.Subject.full_name == subject.full_name,
-        models.Subject.short_name == subject.short_name,
-    ).first()
-    if new_subject is not None:
-        return new_subject
-    else:
-        new_subject = models.Subject(
-            short_name=subject.short_name,
-            full_name=subject.full_name,
-        )
-        db.add(new_subject)
-        db.commit()
-        db.refresh(new_subject)
-        return new_subject
-
-
-async def add_subject_to_user(subject: models.Subject, user: models.User, db: Session) -> models.UserSubject:
-    if subject in user.subjects:
-        raise ValueError(f"user <{user.username}> already has <{subject.full_name}> subject")
-    user_subject = models.UserSubject(
-        user_id=user.id,
-        subject_id=subject.id,
-        row_number=len(user.subjects),
-    )
-    db.add(user_subject)
-    db.commit()
-
-    return db.query(models.UserSubject).filter(
-        models.UserSubject.subject_id == subject.id,
-        models.UserSubject.user_id == user.id,
-    ).first()
-
-# чтобы добавить контрольную точку пользователю необходимо:
-# 1. убедиться, что такая КТ есть в ControlPoint (если нет, создаём)
-# 2. для всех имеющихся user_subject создать user_subject_control_point
-async def add_control_point_to_user(user, new_control_point, db):
-    for subject in user.subjects:
-        user_subject = db.query(models.UserSubject).filter(
-            models.UserSubject.user_id == user.id,
-            models.UserSubject.subject_id == subject.id,
-        ).first()
-        us_su_co_po = models.UserSubjectControlPoint(
-            user_subject_id=user_subject.id,
-            control_point_id=new_control_point.id,
-            deadline=datetime.now() + timedelta(days=3),
-            column_number=len(user_subject.control_points),
-        )
-        db.add(us_su_co_po)
-    db.commit()
-
-async def add_control_points_to_user_subject(user: models.User, user_subject: models.UserSubject, db: Session):
-    existing_control_points = await get_control_points(db, user)
-    if existing_control_points is not None:
-        for control_point in existing_control_points:
-            db.add(models.UserSubjectControlPoint(
-                user_subject_id=user_subject.id,
-                control_point_id=control_point.id,
-                deadline=datetime.now()+timedelta(days=5),
-                column_number=len(existing_control_points),
-            ))
-        db.commit()
-
-
-async def get_or_create_control_point(control_point: schemas.TableHeader, db: Session) -> models.ControlPoint:
-    cp = db.query(models.ControlPoint).filter(
-        models.ControlPoint.full_name == control_point.full_name,
-        models.ControlPoint.short_name == control_point.short_name,
-    ).first()
-    if cp is None:
-        new_cp = models.ControlPoint(short_name=control_point.short_name, full_name=control_point.full_name)
-        db.add(new_cp)
-        db.commit()
-        db.refresh(new_cp)
-        return new_cp
-    return cp
-
-
-async def update_old_subject_for_user(user: models.User, new_subject: models.Subject,
-                                                old_subject: models.Subject, db: Session):
-    user_subject = db.query(models.UserSubject).filter(
-        models.UserSubject.user_id == user.id,
-        models.UserSubject.subject_id == old_subject.id,
-    ).first()
-    if user_subject is None:
-        raise ValueError(f"user <{user.username}> hasn't <{old_subject.full_name}> subject")
-
-    user_subject.subject_id = new_subject.id
-    return user_subject
 
 
 class Action(Enum):
@@ -230,6 +108,9 @@ class Slave:
             if entity == Entity.SUBJECT:
                 subject_info = kwargs.get("subject")
                 self.__create_subject(subject_info)
+            elif entity == Entity.CONTROL_POINT:
+                control_point_info = kwargs.get("control_point")
+                self.__create_control_point(control_point_info)
         elif action == Action.GET:
             if entity == Entity.CELL:
                 return self.__get_cells()
@@ -316,12 +197,46 @@ class Slave:
                 new_user_subject_control_point = models.UserSubjectControlPoint(
                     user_subject_id=user_subject.id,
                     control_point_id=control_point["id"],
-                    deadline=datetime.now() + timedelta(days=1),
+                    deadline=datetime.now()+timedelta(days=3),
                     column_number=column_number,
                 )
                 self.db.add(new_user_subject_control_point)
                 self.db.commit()
                 self.db.refresh(new_user_subject_control_point)
+
+    def __create_control_point(self, control_point_info):
+        # 1. Смотрим есть ли такая КТ в таблице control_points
+        control_point = self.db.query(models.ControlPoint).filter(
+            models.ControlPoint.full_name == control_point_info.full_name,
+            models.ControlPoint.short_name == control_point_info.short_name,
+        ).first()
+        # 2. Если нет - создаём её
+        if control_point is None:
+            control_point = models.ControlPoint(
+                full_name=control_point_info.full_name,
+                short_name=control_point_info.short_name,
+            )
+            self.db.add(control_point)
+            self.db.commit()
+            self.db.refresh(control_point)
+        # 3. Проверяем нет ли у нашего пользователя уже такой контрольной точки
+        user_subjects = self.__get_user_subjects()
+        if len(user_subjects):
+            # 4. Если есть - кидаем ошибку
+            if control_point in user_subjects[0].control_points:
+                raise ValueError(f"user <{self.user.username}> already has <{control_point.full_name}> control point")
+
+        # 5. Если нет - создаём в user_subject_control_point связь для каждой user subject пользователя
+        for user_subject in user_subjects:
+            new_user_subject_control_point = models.UserSubjectControlPoint(
+                user_subject_id=user_subject.id,
+                control_point_id=control_point.id,
+                deadline=datetime.now()+timedelta(days=3),
+                column_number=len(user_subject.control_points)
+            )
+            self.db.add(new_user_subject_control_point)
+            self.db.commit()
+            self.db.refresh(new_user_subject_control_point)
 
     def __get_cells(self):
         cells = defaultdict(dict)

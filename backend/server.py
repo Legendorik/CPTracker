@@ -74,5 +74,17 @@ async def delete_subject():
     pass
 
 
+@app.post("/control_point")
+async def create_control_point(control_point: schemas.TableHeader, token: str = Depends(oauth2_scheme),
+                               db: Session = Depends(get_db)):
+    user: models.User = await crud.get_user_by_token(token, db)
+    slave = Slave(user, db)
+    try:
+        slave.action(Action.CREATE, Entity.CONTROL_POINT, control_point=control_point)
+    except ValueError as e:
+        return {"error": True, "error_type": str(e)}
+    return await sign_in(token, db)
+
+
 if __name__ == "__main__":
     uvicorn.run(app, host="localhost", port=8000)
