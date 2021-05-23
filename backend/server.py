@@ -86,5 +86,17 @@ async def create_control_point(control_point: schemas.TableHeader, token: str = 
     return await sign_in(token, db)
 
 
+@app.put("/control_point")
+async def change_control_point(old_control_point: schemas.TableHeader, new_control_point: schemas.TableHeader,
+                               token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)):
+    slave = Slave(token, db)
+    try:
+        slave.action(Action.CHANGE, Entity.CONTROL_POINT,
+                     old_control_point=old_control_point, new_control_point=new_control_point)
+    except ValueError as e:
+        return {"error": True, "error_type": str(e)}
+    else:
+        return await sign_in(token, db)
+
 if __name__ == "__main__":
     uvicorn.run(app, host="localhost", port=8000)

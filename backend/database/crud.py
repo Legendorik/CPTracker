@@ -107,21 +107,31 @@ class Slave:
             if entity == Entity.SUBJECT:
                 subject_info = kwargs.get("subject")
                 self.__create_subject(subject_info)
+
             elif entity == Entity.CONTROL_POINT:
                 control_point_info = kwargs.get("control_point")
                 self.__create_control_point(control_point_info)
+
         elif action == Action.GET:
             if entity == Entity.CELL:
                 return self.__get_cells()
+
             elif entity == Entity.CONTROL_POINT:
                 return self.__get_control_points()
+
             elif entity == Entity.SUBJECT:
                 return self.__get_subjects()
+
         elif action == Action.CHANGE:
             if entity == Entity.SUBJECT:
                 old_subject = kwargs.get("old_subject")
                 new_subject = kwargs.get("new_subject")
-                return self.__change_subject(old_subject, new_subject)
+                self.__change_subject(old_subject, new_subject)
+
+            elif entity == Entity.CONTROL_POINT:
+                old_control_point = kwargs.get("old_control_point")
+                new_control_point = kwargs.get("new_control_point")
+                self.__change_control_point(old_control_point, new_control_point)
 
     def __change_subject(self, old_subject: schemas.Subject, new_subject: schemas.Subject):
         # 1. Проверяем существует ли старый предмет в базе.
@@ -160,6 +170,46 @@ class Slave:
 
         # 4. Меняем subject_id в user_subject
         user_subject.subject_id = new_subject_db.id
+        self.db.commit()
+
+    def __change_control_point(self, old_control_point, new_control_point):
+        # 1. Проверяем существует ли старый предмет в базе
+        old_control_point_db = self.db.query(models.ControlPoint).filter(
+            models.ControlPoint.short_name == old_control_point.short_name,
+            models.ControlPoint.full_name == old_control_point.full_name,
+        ).first()
+
+        # 2. Если нет - кидаем ошибку
+        if old_control_point_db is None:
+            raise ValueError(f"<{old_control_point.full_name}> control point not in database")
+
+        user_subjects = self.__get_user_subjects()
+        if len(user_subjects):
+            # 3. Если у пользователя нет такой контрольной точки, которую он хочет изменить
+            if old_control_point_db not in user_subjects[0].control_points:
+                raise ValueError(f"user <{self.user.username}> hasn't got <{old_control_point.full_name}> control point")
+
+        # 4. Проверяем существует ли новая контрольная точка в базе
+        new_control_point_db = self.db.query(models.ControlPoint).filter(
+            models.ControlPoint.short_name == new_control_point.short_name,
+            models.ControlPoint.full_name == new_control_point.full_name,
+        ).first()
+
+        # 5. Если её нет - создаём
+        if new_control_point_db is None:
+            new_control_point_db = models.ControlPoint(
+                short_name=new_control_point.short_name,
+                full_name=new_control_point.full_name,
+            )
+            self.db.add(new_control_point_db)
+            self.db.commit()
+            self.db.refresh(new_control_point_db)
+
+        control_points = self.__get_user_subject_control_points()
+        # 6. Для каждого предмета старой контрольной точки меняем control_point_id
+        for control_point in control_points:
+            if control_point.control_point_id == old_control_point_db.id:
+                control_point.control_point_id = new_control_point_db.id
         self.db.commit()
 
     def __create_subject(self, subject_info):
@@ -209,6 +259,7 @@ class Slave:
             models.ControlPoint.full_name == control_point_info.full_name,
             models.ControlPoint.short_name == control_point_info.short_name,
         ).first()
+
         # 2. Если нет - создаём её
         if control_point is None:
             control_point = models.ControlPoint(
@@ -218,6 +269,7 @@ class Slave:
             self.db.add(control_point)
             self.db.commit()
             self.db.refresh(control_point)
+
         # 3. Проверяем нет ли у нашего пользователя уже такой контрольной точки
         user_subjects = self.__get_user_subjects()
         if len(user_subjects):
