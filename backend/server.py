@@ -20,7 +20,7 @@ app = FastAPI()
 async def token(form_data=Depends(OAuth2PasswordRequestForm), db=Depends(get_db)):
     username = form_data.username
     password = form_data.password
-    user: models.User = await crud.authenticate_user(username, password, db)
+    user: models.User = crud.authenticate_user(username, password, db)
     if not user:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -28,7 +28,7 @@ async def token(form_data=Depends(OAuth2PasswordRequestForm), db=Depends(get_db)
             headers={"WWW-Authenticate": "Bearer"},
         )
     access_token_expires: timedelta = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
-    access_token: str = await crud.create_access_token(
+    access_token: str = crud.create_access_token(
         data={"user_id": user.id}, expires_delta=access_token_expires
     )
     return {"access_token": access_token, "token_type": "bearer"}

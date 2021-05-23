@@ -5,7 +5,7 @@ from typing import Optional
 from passlib.context import CryptContext
 from jose import JWTError, jwt
 from datetime import datetime, timedelta
-from fastapi import Depends, HTTPException, status
+from fastapi import HTTPException, status
 from os import getenv
 from collections import defaultdict
 
@@ -24,7 +24,7 @@ async def get_db():
 
 
 async def create_user(db: Session, user: schemas.CreateUser) -> models.User:
-    hashed_password = await get_password_hash(user.password)
+    hashed_password = get_password_hash(user.password)
     db_user = models.User(username=user.username, hash_password=hashed_password)
     db.add(db_user)
     db.commit()
@@ -32,27 +32,27 @@ async def create_user(db: Session, user: schemas.CreateUser) -> models.User:
     return db_user
 
 
-async def verify_password(plain_password: str, hashed_password: str) -> bool:
+def verify_password(plain_password: str, hashed_password: str) -> bool:
     return pwd_context.verify(plain_password, hashed_password)
 
 
-async def get_password_hash(password: str) -> str:
+def get_password_hash(password: str) -> str:
     return pwd_context.hash(password)
 
 
-async def authenticate_user(username: str, password: str, db: Session) -> Optional[models.User]:
+def authenticate_user(username: str, password: str, db: Session) -> Optional[models.User]:
     user = db.query(models.User).filter(models.User.username == username).one_or_none()
 
     if user is None:
         return None
 
-    if not await verify_password(password, user.hash_password):
+    if not verify_password(password, user.hash_password):
         return None
 
     return user
 
 
-async def create_access_token(data: dict, expires_delta: Optional[timedelta] = None) -> str:
+def create_access_token(data: dict, expires_delta: Optional[timedelta] = None) -> str:
     to_encode = data.copy()
     if expires_delta:
         expire = datetime.utcnow() + expires_delta
@@ -132,10 +132,10 @@ class Slave:
 
         # 2. Если его нет - кидаем ошибку
         if subject is None:
-            raise ValueError(f"<{subject.full_name}> subject not in database")
+            raise ValueError(f"<{old_subject.full_name}> subject not in database")
 
         if subject not in self.user.subjects:
-            raise ValueError(f"user <{user.username}> hasn't got <{subject.full_name}> subject")
+            raise ValueError(f"user <{self.user.username}> hasn't got <{subject.full_name}> subject")
 
         # 3. Проверяем существует ли новый предмет в базе
         new_subject_db = self.db.query(models.Subject).filter(
