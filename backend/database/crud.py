@@ -137,9 +137,24 @@ class Slave:
             if entity == Entity.SUBJECT:
                 subject = kwargs.get("subject")
                 self.__delete_subject(subject)
+                self.__reindex_subject()
+
             elif entity == Entity.CONTROL_POINT:
                 control_point = kwargs.get("control_point")
                 self.__delete_control_point(control_point)
+                self.__reindex_control_points()
+
+    def __reindex_subject(self):
+        user_subjects = self.__get_user_subjects()
+        for index, user_subject in enumerate(user_subjects):
+            user_subject.row_number = index
+        self.db.commit()
+
+    def __reindex_control_points(self):
+        control_points = self.__get_user_subject_control_points()
+        for index, control_point in enumerate(control_points):
+            control_point.column_number = index
+        self.db.commit()
 
     def __delete_control_point(self, control_point):
         # 1. Проверить, что контрольная точка есть в базе
