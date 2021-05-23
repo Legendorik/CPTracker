@@ -36,18 +36,22 @@ async def token(form_data=Depends(OAuth2PasswordRequestForm), db=Depends(get_db)
 
 @app.post("/get_dashboard")
 async def sign_in(token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)):
-    user: models.User = await crud.get_user_by_token(token, db)
-    slave = Slave(user, db)
+    slave = Slave(token, db)
     subjects = slave.action(Action.GET, Entity.SUBJECT)
     control_points = slave.action(Action.GET, Entity.CONTROL_POINT)
     cells = slave.action(Action.GET, Entity.CELL)
-    return {"user_id": user.id, "username": user.username, "columns": control_points, "rows": subjects, "cells": cells}
+    return {
+        "user_id": slave.user.id,
+        "username": slave.user.username,
+        "columns": control_points,
+        "rows": subjects,
+        "cells": cells
+    }
 
 
 @app.post("/subject")
 async def create_subject(subject: schemas.Subject, token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)):
-    user: models.User = await crud.get_user_by_token(token, db)
-    slave = Slave(user, db)
+    slave = Slave(token, db)
     try:
         slave.action(Action.CREATE, Entity.SUBJECT, subject=subject)
     except ValueError as e:
@@ -59,8 +63,7 @@ async def create_subject(subject: schemas.Subject, token: str = Depends(oauth2_s
 @app.put("/subject")
 async def change_subject(old_subject: schemas.Subject, new_subject: schemas.Subject,
                          token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)):
-    user: models.User = await crud.get_user_by_token(token, db)
-    slave = Slave(user, db)
+    slave = Slave(token, db)
     try:
         slave.action(Action.CHANGE, Entity.SUBJECT, old_subject=old_subject, new_subject=new_subject)
     except ValueError as e:
@@ -77,8 +80,7 @@ async def delete_subject():
 @app.post("/control_point")
 async def create_control_point(control_point: schemas.TableHeader, token: str = Depends(oauth2_scheme),
                                db: Session = Depends(get_db)):
-    user: models.User = await crud.get_user_by_token(token, db)
-    slave = Slave(user, db)
+    slave = Slave(token, db)
     try:
         slave.action(Action.CREATE, Entity.CONTROL_POINT, control_point=control_point)
     except ValueError as e:

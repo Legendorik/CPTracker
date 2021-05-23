@@ -63,27 +63,6 @@ async def create_access_token(data: dict, expires_delta: Optional[timedelta] = N
     return encoded_jwt
 
 
-async def get_user_by_token(token: str, db: Session) -> models.User:
-    credentials_exception = HTTPException(
-        status_code=status.HTTP_401_UNAUTHORIZED,
-        detail="Could not validate credentials",
-        headers={"WWW-Authenticate": "Bearer"},
-    )
-    try:
-        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])  # кинет JWTError если время токена истекло
-        user_id: str = payload.get("user_id")
-        if user_id is None:
-            raise credentials_exception
-    except JWTError:
-        raise credentials_exception
-
-    user = db.query(models.User).get(user_id)
-    if user is None:
-        raise credentials_exception
-
-    return user
-
-
 class Action(Enum):
     CREATE = 1
     CHANGE = 2
@@ -99,9 +78,29 @@ class Entity(Enum):
 
 
 class Slave:
-    def __init__(self, user: models.User, db: Session):
-        self.user = user
-        self.db = db
+    def __init__(self, token: str, db: Session):
+        self.db: Session = db
+        self.user: models.User = self.get_user_by_token(token)
+
+    def get_user_by_token(self, token: str) -> models.User:
+        credentials_exception = HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Could not validate credentials",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+        try:
+            payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])  # кинет JWTError если время токена истекло
+            user_id = payload.get("user_id")
+            if user_id is None:
+                raise credentials_exception
+        except JWTError:
+            raise credentials_exception
+
+        user = self.db.query(models.User).get(user_id)
+        if user is None:
+            raise credentials_exception
+
+        return user
 
     def action(self, action: Action, entity: Entity, **kwargs):
         if action == Action.CREATE:
