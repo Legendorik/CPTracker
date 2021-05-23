@@ -1,14 +1,12 @@
-from datetime import timedelta
 import uvicorn
-from fastapi import Depends, FastAPI, HTTPException, status
+from fastapi import Depends, FastAPI
 from fastapi.security import OAuth2PasswordRequestForm
 from config import *
-from database import schemas, models, crud
+from database import crud
 from database.crud import *
 from database.database import engine
 from database.crud import get_db
 from sqlalchemy.orm import Session
-from typing import Optional
 from fastapi.security import OAuth2PasswordBearer
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
