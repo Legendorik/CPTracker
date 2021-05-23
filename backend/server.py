@@ -107,5 +107,17 @@ async def change_control_point(old_control_point: schemas.TableHeader, new_contr
     else:
         return await sign_in(token, db)
 
+
+@app.delete("/control_point")
+async def delete_control_point(control_point: schemas.TableHeader, token: str = Depends(oauth2_scheme),
+                               db: Session = Depends(get_db)):
+    slave = Slave(token, db)
+    try:
+        slave.action(Action.DELETE, Entity.CONTROL_POINT, control_point=control_point)
+    except ValueError as e:
+        return {"error": True, "error_type": str(e)}
+    return await sign_in(token, db)
+
+
 if __name__ == "__main__":
     uvicorn.run(app, host="localhost", port=8000)

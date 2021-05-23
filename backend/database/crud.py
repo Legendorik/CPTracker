@@ -137,6 +137,32 @@ class Slave:
             if entity == Entity.SUBJECT:
                 subject = kwargs.get("subject")
                 self.__delete_subject(subject)
+            elif entity == Entity.CONTROL_POINT:
+                control_point = kwargs.get("control_point")
+                self.__delete_control_point(control_point)
+
+    def __delete_control_point(self, control_point):
+        # 1. Проверить, что контрольная точка есть в базе
+        control_point_db = self.db.query(models.ControlPoint).filter(
+            models.ControlPoint.short_name == control_point.short_name,
+            models.ControlPoint.full_name == control_point.full_name,
+        ).first()
+        if control_point_db is None:
+            raise ValueError(f"<{control_point.full_name}> control point not in database")
+
+        # 2. Проверить, что контрольная точка есть у пользователя
+        user_subjects = self.__get_user_subjects()
+        if not len(user_subjects):
+            raise ValueError(f"can't delete control point for user who haven't got subjects")
+        if control_point_db not in user_subjects[0].control_points:
+            raise ValueError(f"user <{self.user.username}> hasn't got <{control_point.full_name}> control point")
+
+        # 3. Проходимся по всем ячейкам и удаляем те, у кого id == control_point.id
+        control_points = self.__get_user_subject_control_points()
+        for control_point in control_points:
+            if control_point.control_point_id == control_point_db.id:
+                self.db.delete(control_point)
+        self.db.commit()
 
     def __change_subject(self, old_subject: schemas.Subject, new_subject: schemas.Subject):
         # 1. Проверяем существует ли старый предмет в базе.
