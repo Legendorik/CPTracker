@@ -48,7 +48,7 @@ async def sign_in(token: str = Depends(oauth2_scheme), db: Session = Depends(get
 
 
 @app.post("/subject")
-async def create_subject(subject: schemas.Subject, token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)):
+async def create_subject(subject: schemas.TableHeader, token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)):
     slave = Slave(token, db)
     try:
         slave.action(Action.CREATE, Entity.SUBJECT, subject=subject)
@@ -59,7 +59,7 @@ async def create_subject(subject: schemas.Subject, token: str = Depends(oauth2_s
 
 
 @app.put("/subject")
-async def change_subject(old_subject: schemas.Subject, new_subject: schemas.Subject,
+async def change_subject(old_subject: schemas.TableHeader, new_subject: schemas.TableHeader,
                          token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)):
     slave = Slave(token, db)
     try:
