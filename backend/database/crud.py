@@ -152,8 +152,11 @@ class Slave:
 
     def __reindex_control_points(self):
         control_points = self.__get_user_subject_control_points()
+        user_subjects = self.__get_user_subjects()
+        count = len(control_points) // len(user_subjects)
+
         for index, control_point in enumerate(control_points):
-            control_point.column_number = index
+            control_point.column_number = index // count
         self.db.commit()
 
     def __delete_control_point(self, control_point):
@@ -179,7 +182,7 @@ class Slave:
                 self.db.delete(control_point)
         self.db.commit()
 
-    def __change_subject(self, old_subject: schemas.Subject, new_subject: schemas.Subject):
+    def __change_subject(self, old_subject: schemas.TableHeader, new_subject: schemas.TableHeader):
         # 1. Проверяем существует ли старый предмет в базе.
         subject = self.db.query(models.Subject).filter(
             models.Subject.short_name == old_subject.short_name,
