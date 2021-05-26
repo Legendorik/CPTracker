@@ -440,6 +440,7 @@ class Slave:
     def __get_user_subjects(self) -> list[models.UserSubject]:
         return self.db.query(models.UserSubject) \
             .join(models.Subject, models.UserSubject.subject_id == models.Subject.id) \
+            .filter(models.UserSubject.user_id == self.user.id) \
             .order_by(models.UserSubject.row_number) \
             .all()
 
@@ -472,5 +473,6 @@ class Slave:
     def __get_user_subject_control_points(self) -> list[models.UserSubjectControlPoint]:
         return self.db.query(models.UserSubjectControlPoint) \
             .join(models.UserSubject, models.UserSubjectControlPoint.user_subject_id == models.UserSubject.id) \
+            .filter(models.UserSubject.user_id == self.user.id) \
             .order_by(models.UserSubjectControlPoint.column_number) \
             .all()
