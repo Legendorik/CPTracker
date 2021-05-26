@@ -1,6 +1,7 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:homework_task_tracker/popup_alert.dart';
 import 'package:homework_task_tracker/popup_task_info.dart';
 import 'package:horizontal_data_table/horizontal_data_table.dart';
 import 'package:intl/intl.dart';
@@ -32,6 +33,7 @@ class _HorizontalDataTableState extends State<MyHorizontalDataTable> {
 
   static const double authorizationWindowHeight = 270;
   static const double editTitlesWindowHeight = 320;
+  static const double alertWindowHeight = 175;
   static const double taskInfoWindowHeight = 475;
 
   static List<ShortLongName> columns = [ShortLongName("Предмет")];
@@ -353,11 +355,13 @@ class _HorizontalDataTableState extends State<MyHorizontalDataTable> {
           })
       
         );
+        _checkNetworkErrors(response, "Ошибка удаления КТ");
         print("Response status: ${response.statusCode}");
         print("Response body: ${response.body}");
         
       } catch (err){
         print(err);
+        //_checkNetworkErrors({"statusCode": 0, "body": err}, "Ошибка удаления КТ");
       }
     }
     setState(() {
@@ -386,11 +390,13 @@ class _HorizontalDataTableState extends State<MyHorizontalDataTable> {
           })
       
         );
+        _checkNetworkErrors(response, "Ошибка удаления предмета");
         print("Response status: ${response.statusCode}");
         print("Response body: ${response.body}");
         
       } catch (err){
         print(err);
+        //_checkNetworkErrors({"statusCode": 0, "body": err}, "Ошибка удаления предмета");
       }
     }
       
@@ -423,6 +429,7 @@ class _HorizontalDataTableState extends State<MyHorizontalDataTable> {
             })
         
           );
+          _checkNetworkErrors(response, "Ошибка создания КТ");
           print("Response status: ${response.statusCode}");
           print("Response body: ${response.body}");
           //add real id
@@ -445,7 +452,7 @@ class _HorizontalDataTableState extends State<MyHorizontalDataTable> {
               }
             })
           );
-
+          _checkNetworkErrors(response, "Ошибка изменения КТ");
           print("Response status: ${response.statusCode}");
           print("Response body: ${response.body}");
           //add real id
@@ -453,6 +460,7 @@ class _HorizontalDataTableState extends State<MyHorizontalDataTable> {
       }
     } catch (err){
       print(err);
+      //_checkNetworkErrors({"statusCode": 0, "body": err}, "Ошибка изменения КТ");
     }
 
 
@@ -480,6 +488,7 @@ class _HorizontalDataTableState extends State<MyHorizontalDataTable> {
           );
           print("Response status: ${response.statusCode}");
           print("Response body: ${response.body}");
+          _checkNetworkErrors(response, "Ошибка добавления предмета");
           //add real id
           value.id = 0;
       }
@@ -500,7 +509,7 @@ class _HorizontalDataTableState extends State<MyHorizontalDataTable> {
               }
             })
           );
-
+          _checkNetworkErrors(response, "Ошибка изменения предмета");
           print("Response status: ${response.statusCode}");
           print("Response body: ${response.body}");
           //add real id
@@ -508,6 +517,7 @@ class _HorizontalDataTableState extends State<MyHorizontalDataTable> {
       }
     } catch (err){
       print(err);
+      //_checkNetworkErrors({"statusCode": 0, "body": err}, "Ошибка изменения предмета");
     }
     setState(() {
       //print(_lastRowTitleChosenIndex);
@@ -547,8 +557,10 @@ class _HorizontalDataTableState extends State<MyHorizontalDataTable> {
 
       print("Response status: ${response.statusCode}");
       print("Response body: ${response.body}");
+      _checkNetworkErrors(response, "Ошибка изменения задания");
     } catch (err){
       print(err);
+      //_checkNetworkErrors({"statusCode": 0, "body": err}, "Ошибка изменения задания");
     }
 
     setState(() {
@@ -569,9 +581,11 @@ class _HorizontalDataTableState extends State<MyHorizontalDataTable> {
             
           }
         );
+        _checkNetworkErrors(response, "Ошибка получения таблицы");
         _authorize(token, response);
       } catch (err){
         print(err);
+        //_checkNetworkErrors({"statusCode": 0, "body": {"error": err}}, "Ошибка получения таблицы");
       }
       
 
@@ -623,7 +637,21 @@ class _HorizontalDataTableState extends State<MyHorizontalDataTable> {
       cells = newCells;
       
     });
+
+    
   }
 
-  
+  _checkNetworkErrors(response, problemTitle, [problemText = ""]){
+    
+    var body = json.decode(utf8.decode(response.body.codeUnits));
+    if (body == null) return;
+    if (response.statusCode != null && response.statusCode != 200 || body["error"] != null){
+
+      showPopup(context, PopupAlert(
+        text: "Status Code: " + response.statusCode.toString() + ", " + body["info"].toString(), w: 500), 
+        problemTitle, width: 500, height: alertWindowHeight
+      );
+    }
+    
+  }
 }
