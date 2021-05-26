@@ -203,10 +203,7 @@ class Slave:
             models.UserSubjectControlPoint.control_point_id == control_point_db.id,
         ).first()
 
-        deadline = new_cell.deadline
-        if not deadline.replace(tzinfo=None) > datetime.now() + timedelta(days=1):
-            raise ValueError(f"you can set datetime which more than current_date + 1 days")
-        cell.deadline = deadline
+        cell.deadline = new_cell.deadline
         cell.complete = new_cell.complete
         cell.description = new_cell.description
 
@@ -392,7 +389,6 @@ class Slave:
                 new_user_subject_control_point = models.UserSubjectControlPoint(
                     user_subject_id=user_subject.id,
                     control_point_id=control_point["id"],
-                    deadline=datetime.now()+timedelta(days=3),
                     column_number=column_number,
                 )
                 self.db.add(new_user_subject_control_point)
@@ -428,7 +424,6 @@ class Slave:
             new_user_subject_control_point = models.UserSubjectControlPoint(
                 user_subject_id=user_subject.id,
                 control_point_id=control_point.id,
-                deadline=datetime.now()+timedelta(days=3),
                 column_number=len(user_subject.control_points)
             )
             self.db.add(new_user_subject_control_point)

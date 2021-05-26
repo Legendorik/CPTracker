@@ -7,13 +7,12 @@ class UserSubjectControlPoint(Base):
     __tablename__ = "UserSubjectControlPoint"
     user_subject_id = Column("user_subject_id", BigInteger, ForeignKey("UserSubject.id"), primary_key=True)
     control_point_id = Column("control_point_id", BigInteger, ForeignKey("ControlPoint.id"), primary_key=True)
-    deadline = Column("deadline", DateTime, nullable=False)
+    deadline = Column("deadline", DateTime)
     description = Column("description", String(100))
     complete = Column("complete", Boolean, default=None)
     column_number = Column("column_number", BigInteger, nullable=False)
 
     __table_args__ = (
-        CheckConstraint("deadline > current_date + 1", name="deadline_in_future"),
         CheckConstraint("column_number >= 0", name="positive_column_number"),
     )
 
