@@ -27,7 +27,7 @@ class _PopupTaskInfoState extends State<PopupTaskInfo> {
 
   _PopupTaskInfoState({this.listener, this.taskInfo}): super() {
     dropdownValue = possibleDropdownValues[taskInfo.state];
-    newTaskInfo = TaskInfo.full(taskInfo.state, taskInfo.description, taskInfo.deadline);
+    newTaskInfo = TaskInfo.full(taskInfo.state, taskInfo.description, taskInfo.deadline, taskInfo.id);
   }
 
   @override
