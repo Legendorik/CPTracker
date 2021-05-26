@@ -141,7 +141,7 @@ async def sign_up(user: schemas.CreateUser, db: Session = Depends(get_db)):
     except ValueError as e:
         return {"error": True, "error_type": str(e)}
     else:
-        return token
+        return await sign_in(token, db)
 
 
 @app.post("/sign_out", status_code=status.HTTP_200_OK)
