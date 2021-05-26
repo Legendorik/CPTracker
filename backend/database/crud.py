@@ -23,15 +23,6 @@ async def get_db():
         db.close()
 
 
-async def create_user(db: Session, user: schemas.CreateUser) -> models.User:
-    hashed_password = get_password_hash(user.password)
-    db_user = models.User(username=user.username, hash_password=hashed_password)
-    db.add(db_user)
-    db.commit()
-    db.refresh(db_user)
-    return db_user
-
-
 def verify_password(plain_password: str, hashed_password: str) -> bool:
     return pwd_context.verify(plain_password, hashed_password)
 
@@ -155,7 +146,7 @@ class Slave:
                 self.__delete_control_point(control_point)
                 self.__reindex_control_points()
 
-    def __register_user(self, user: schemas.CreateUser):
+    def __register_user(self, user: schemas.CreateUser) -> str:
         db_user = self.db.query(models.User).filter(
             models.User.username == user.username,
         ).first()
@@ -172,7 +163,8 @@ class Slave:
         data = {"user_id": db_user.id}
         return create_access_token(data)
 
-    def __change_cell(self, subject, control_point, new_cell):
+    def __change_cell(self, subject: schemas.TableHeader, control_point: schemas.TableHeader,
+                      new_cell: schemas.Cell) -> None:
         subject_db = self.db.query(models.Subject).filter(
             models.Subject.full_name == subject.full_name,
             models.Subject.short_name == subject.short_name,
@@ -209,13 +201,13 @@ class Slave:
 
         self.db.commit()
 
-    def __reindex_subject(self):
+    def __reindex_subject(self) -> None:
         user_subjects = self.__get_user_subjects()
         for index, user_subject in enumerate(user_subjects):
             user_subject.row_number = index
         self.db.commit()
 
-    def __reindex_control_points(self):
+    def __reindex_control_points(self) -> None:
         control_points = self.__get_user_subject_control_points()
         user_subjects = self.__get_user_subjects()
         count = len(control_points) // len(user_subjects)
@@ -224,7 +216,7 @@ class Slave:
             control_point.column_number = index // count
         self.db.commit()
 
-    def __delete_control_point(self, control_point):
+    def __delete_control_point(self, control_point: schemas.TableHeader) -> None:
         # 1. Проверить, что контрольная точка есть в базе
         control_point_db = self.db.query(models.ControlPoint).filter(
             models.ControlPoint.short_name == control_point.short_name,
@@ -247,7 +239,7 @@ class Slave:
                 self.db.delete(control_point)
         self.db.commit()
 
-    def __change_subject(self, old_subject: schemas.TableHeader, new_subject: schemas.TableHeader):
+    def __change_subject(self, old_subject: schemas.TableHeader, new_subject: schemas.TableHeader) -> None:
         # 1. Проверяем существует ли старый предмет в базе.
         subject = self.db.query(models.Subject).filter(
             models.Subject.short_name == old_subject.short_name,
@@ -286,7 +278,7 @@ class Slave:
         user_subject.subject_id = new_subject_db.id
         self.db.commit()
 
-    def __delete_subject(self, subject):
+    def __delete_subject(self, subject: schemas.TableHeader) -> None:
         # 1. Проверяем есть ли такой предмет в базе
         db_subject = self.db.query(models.Subject).filter(
             models.Subject.short_name == subject.short_name,
@@ -315,7 +307,8 @@ class Slave:
         self.db.delete(user_subject)
         self.db.commit()
 
-    def __change_control_point(self, old_control_point, new_control_point):
+    def __change_control_point(self, old_control_point: schemas.TableHeader,
+                               new_control_point: schemas.TableHeader) -> None:
         # 1. Проверяем существует ли старый предмет в базе
         old_control_point_db = self.db.query(models.ControlPoint).filter(
             models.ControlPoint.short_name == old_control_point.short_name,
@@ -355,28 +348,28 @@ class Slave:
                 control_point.control_point_id = new_control_point_db.id
         self.db.commit()
 
-    def __create_subject(self, subject_info):
+    def __create_subject(self, subject: schemas.TableHeader) -> None:
         # 1. Узнаём существует ли такой предмет в таблице Subject.
-        subject = self.db.query(models.Subject).filter(
-            models.Subject.short_name == subject_info.short_name,
-            models.Subject.full_name == subject_info.full_name,
+        subject_id = self.db.query(models.Subject).filter(
+            models.Subject.short_name == subject.short_name,
+            models.Subject.full_name == subject.full_name,
         ).first()
 
-        if subject is None:
+        if subject_id is None:
             # 2. Если нет - создаём его
-            subject = models.Subject(**subject_info.dict())
-            self.db.add(subject)
+            subject_id = models.Subject(**subject.dict())
+            self.db.add(subject_id)
             self.db.commit()
-            self.db.refresh(subject)
+            self.db.refresh(subject_id)
 
         # 3. Проверяем, нет ли у нашего пользователя уже такого предмета.
-        if subject in self.user.subjects:
-            raise ValueError(f"user <{self.user.username}> already has <{subject.full_name}> subject")
+        if subject_id in self.user.subjects:
+            raise ValueError(f"user <{self.user.username}> already has <{subject_id.full_name}> subject")
         else:
             # 4. Если нет, то создаём запись в табличке user_subject.
             user_subject = models.UserSubject(
                 user_id=self.user.id,
-                subject_id=subject.id,
+                subject_id=subject_id.id,
                 row_number=len(self.user.subjects),
             )
             self.db.add(user_subject)
@@ -395,42 +388,42 @@ class Slave:
                 self.db.commit()
                 self.db.refresh(new_user_subject_control_point)
 
-    def __create_control_point(self, control_point_info):
+    def __create_control_point(self, control_point: schemas.TableHeader) -> None:
         # 1. Смотрим есть ли такая КТ в таблице control_points
-        control_point = self.db.query(models.ControlPoint).filter(
-            models.ControlPoint.full_name == control_point_info.full_name,
-            models.ControlPoint.short_name == control_point_info.short_name,
+        control_point_db = self.db.query(models.ControlPoint).filter(
+            models.ControlPoint.full_name == control_point.full_name,
+            models.ControlPoint.short_name == control_point.short_name,
         ).first()
 
         # 2. Если нет - создаём её
-        if control_point is None:
-            control_point = models.ControlPoint(
-                full_name=control_point_info.full_name,
-                short_name=control_point_info.short_name,
+        if control_point_db is None:
+            control_point_db = models.ControlPoint(
+                full_name=control_point.full_name,
+                short_name=control_point.short_name,
             )
-            self.db.add(control_point)
+            self.db.add(control_point_db)
             self.db.commit()
-            self.db.refresh(control_point)
+            self.db.refresh(control_point_db)
 
         # 3. Проверяем нет ли у нашего пользователя уже такой контрольной точки
         user_subjects = self.__get_user_subjects()
         if len(user_subjects):
             # 4. Если есть - кидаем ошибку
-            if control_point in user_subjects[0].control_points:
-                raise ValueError(f"user <{self.user.username}> already has <{control_point.full_name}> control point")
+            if control_point_db in user_subjects[0].control_points:
+                raise ValueError(f"user <{self.user.username}> already has <{control_point_db.full_name}> control point")
 
         # 5. Если нет - создаём в user_subject_control_point связь для каждой user subject пользователя
         for user_subject in user_subjects:
             new_user_subject_control_point = models.UserSubjectControlPoint(
                 user_subject_id=user_subject.id,
-                control_point_id=control_point.id,
+                control_point_id=control_point_db.id,
                 column_number=len(user_subject.control_points)
             )
             self.db.add(new_user_subject_control_point)
             self.db.commit()
             self.db.refresh(new_user_subject_control_point)
 
-    def __get_cells(self):
+    def __get_cells(self) -> dict:
         cells = defaultdict(dict)
         control_points = self.__get_user_subject_control_points()
 
@@ -444,13 +437,13 @@ class Slave:
 
         return cells
 
-    def __get_user_subjects(self):
+    def __get_user_subjects(self) -> list[models.UserSubject]:
         return self.db.query(models.UserSubject) \
             .join(models.Subject, models.UserSubject.subject_id == models.Subject.id) \
             .order_by(models.UserSubject.row_number) \
             .all()
 
-    def __get_subjects(self):
+    def __get_subjects(self) -> dict:
         subjects = dict()
         user_subjects = self.__get_user_subjects()
         for user_subject in user_subjects:
@@ -462,7 +455,7 @@ class Slave:
             }
         return subjects
 
-    def __get_control_points(self):
+    def __get_control_points(self) -> dict:
         control_points = dict()
         user_subject_control_points = self.__get_user_subject_control_points()
         for user_subject_control_point in user_subject_control_points:
@@ -476,7 +469,7 @@ class Slave:
                 }
         return control_points
 
-    def __get_user_subject_control_points(self):
+    def __get_user_subject_control_points(self) -> list[models.UserSubjectControlPoint]:
         return self.db.query(models.UserSubjectControlPoint) \
             .join(models.UserSubject, models.UserSubjectControlPoint.user_subject_id == models.UserSubject.id) \
             .order_by(models.UserSubjectControlPoint.column_number) \
