@@ -1,5 +1,5 @@
 import uvicorn
-from fastapi import Depends, FastAPI
+from fastapi import Depends, FastAPI, Response
 from fastapi.security import OAuth2PasswordRequestForm
 from config import *
 from database import crud
@@ -142,6 +142,11 @@ async def sign_up(user: schemas.CreateUser, db: Session = Depends(get_db)):
         return {"error": True, "error_type": str(e)}
     else:
         return await token
+
+
+@app.post("/sign_out", status_code=status.HTTP_200_OK)
+async def sign_out(response: Response):
+    response.delete_cookie(key="access_token")
 
 
 if __name__ == "__main__":
