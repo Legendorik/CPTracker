@@ -91,7 +91,7 @@ class _HorizontalDataTableState extends State<MyHorizontalDataTable> {
 
 
   List<Widget> _getTitlesWidget(){
-    //TODO get title list from server 
+
     List<Widget> res = [];
     
 
@@ -130,13 +130,13 @@ class _HorizontalDataTableState extends State<MyHorizontalDataTable> {
       ));
 
     }
-    if (filterId == 0)
+    if (filterId == 0 && rows.length != 0)
       res.add(_createButton(0));
     return res;
   }
 
   Widget _generateFirstColumnRow(BuildContext context, int index) {
-    //TODO get list from server 
+
     //print("index in first: $index");
 
     if (index == rows.length){
@@ -182,7 +182,7 @@ class _HorizontalDataTableState extends State<MyHorizontalDataTable> {
     List<Widget> cellsList = [];
     if (index < cells.length){
       for (int i=0; i<cells[index].length; i++) {
-        if ((filterId == 0) || (filterId == 1 && cells[index][i].state == 1) || (filterId == 2 && cells[index][i].state == 2))
+        if ((filterId == 0) || (filterId == 1 && cells[index][i].state == 1) || (filterId == 2 && cells[index][i].state == 2)){
           cellsList.add(
             
             Material(
@@ -205,7 +205,11 @@ class _HorizontalDataTableState extends State<MyHorizontalDataTable> {
               
             )
           );
-          
+        }  
+
+        if (i == cells[index].length - 1 && cellsList.isEmpty)  {
+          cellsList.add(Container(width: 100, height: 52, padding: EdgeInsets.fromLTRB(0, 0, 0, 0), alignment: Alignment.center));
+        }
       }
     }
     else {
