@@ -276,13 +276,36 @@ class _HorizontalDataTableState extends State<MyHorizontalDataTable> {
     }
     else{
       DateTime dateTime = info.deadline; // your dateTime object
+      DateTime now = DateTime.now();
+      Color textColor;
+
+      if (dateTime.isBefore(now)){
+        textColor = Colors.red[700];
+      }
+      else if (dateTime.subtract(Duration(days:1)).isBefore(now)) {
+        textColor = Colors.orange[700];
+      }
+      else if (dateTime.subtract(Duration(days:3)).isBefore(now)) {
+        textColor = Colors.yellow[700];
+      }
+      else if (dateTime.subtract(Duration(days:7)).isBefore(now)) {
+        textColor = Colors.green;
+      }
+      else {
+        textColor = Colors.black;
+      }
+
+      if (info.state == 2){
+        textColor = Colors.black;
+      }
       DateFormat dateFormat = DateFormat("dd/MM/yy, HH:mm"); // how you want it to be formatted
       String string = dateFormat.format(dateTime);
+      
       return Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           filterId == 0 ? icon : titlePlusIcon,
-          Text(string, style: TextStyle(fontSize: 12))
+          Text(string, style: TextStyle(fontSize: 12, color: textColor))
         ],
       );
     }
@@ -345,7 +368,11 @@ class _HorizontalDataTableState extends State<MyHorizontalDataTable> {
     });
   }
   Future<void> _deleteRowListener() async {
+    if (rows.length == 1 && columns.length > 0){
 
+      //удалять нельзя
+      return;
+    }
     if (rows[_lastRowTitleChosenIndex].id != -1){
       try {
         var response = await http.delete(Uri.parse('http://localhost:8000/subject'), 

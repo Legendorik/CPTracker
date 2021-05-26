@@ -163,8 +163,7 @@ class _PopupAuthorizationState extends State<PopupAuthorization>{
         var response = await http.post(Uri.parse('http://localhost:8000/sign_up'), body: json.encode({
           "username": _login,
           "password": _pass
-        })
-            );
+        }));
         print("Response status: ${response.statusCode}");
         print("Response body: ${response.body}");
         
