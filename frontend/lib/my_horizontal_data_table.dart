@@ -62,13 +62,19 @@ class _HorizontalDataTableState extends State<MyHorizontalDataTable> {
   @override
   Widget build(BuildContext context) {
 
-    int itemCount = filterId == 0? rows.length+1 : rows.length;
-    double rightHandSideColumnWidth = filterId == 0? (columns.length-1)*100.0+100 : (columns.length-1)*100.0;
+    
     if (token == null){
+      columns = [ShortLongName("Предмет")];
+      rows = [];
+      cells = [];
+
       Timer(Duration(milliseconds: 200), (){
         showPopup(context, PopupAuthorization(listener: _authorizationListener), "Авторизация", width: 500, height: authorizationWindowHeight, needBackButton: false);
       });
     }
+
+    int itemCount = filterId == 0? rows.length+1 : rows.length;
+    double rightHandSideColumnWidth = filterId == 0? (columns.length-1)*100.0+100 : (columns.length-1)*100.0;
     return Container(
       child: HorizontalDataTable(
         leftHandSideColumnWidth: 100,
