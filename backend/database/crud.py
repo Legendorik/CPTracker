@@ -78,9 +78,10 @@ class Entity(Enum):
 
 
 class Slave:
-    def __init__(self, token: str, db: Session):
+    def __init__(self, db: Session, token: Optional[str] = None):
         self.db: Session = db
-        self.user: models.User = self.get_user_by_token(token)
+        if token is not None:
+            self.user: models.User = self.get_user_by_token(token)
 
     def get_user_by_token(self, token: str) -> models.User:
         credentials_exception = HTTPException(
@@ -111,6 +112,10 @@ class Slave:
             elif entity == Entity.CONTROL_POINT:
                 control_point_info = kwargs.get("control_point")
                 self.__create_control_point(control_point_info)
+
+            elif entity == Entity.USER:
+                new_user = kwargs.get("new_user")
+                return self.__register_user(new_user)
 
         elif action == Action.GET:
             if entity == Entity.CELL:
@@ -149,6 +154,23 @@ class Slave:
                 control_point = kwargs.get("control_point")
                 self.__delete_control_point(control_point)
                 self.__reindex_control_points()
+
+    def __register_user(self, user: schemas.CreateUser):
+        db_user = self.db.query(models.User).filter(
+            models.User.username == user.username,
+        ).first()
+        if db_user is not None:
+            raise ValueError(f"user with {user.username} username already exists")
+        db_user = models.User(
+            username=user.username,
+            hash_password=get_password_hash(user.password),
+        )
+        self.db.add(db_user)
+        self.db.commit()
+        self.db.refresh(db_user)
+
+        data = {"user_id": db_user.id}
+        return create_access_token(data)
 
     def __change_cell(self, subject, control_point, new_cell):
         subject_db = self.db.query(models.Subject).filter(
@@ -189,7 +211,6 @@ class Slave:
         cell.description = new_cell.description
 
         self.db.commit()
-
 
     def __reindex_subject(self):
         user_subjects = self.__get_user_subjects()

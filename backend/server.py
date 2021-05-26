@@ -34,7 +34,7 @@ async def token(form_data=Depends(OAuth2PasswordRequestForm), db=Depends(get_db)
 
 @app.post("/get_dashboard")
 async def sign_in(token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)):
-    slave = Slave(token, db)
+    slave = Slave(db, token)
     subjects = slave.action(Action.GET, Entity.SUBJECT)
     control_points = slave.action(Action.GET, Entity.CONTROL_POINT)
     cells = slave.action(Action.GET, Entity.CELL)
@@ -50,7 +50,7 @@ async def sign_in(token: str = Depends(oauth2_scheme), db: Session = Depends(get
 @app.post("/subject")
 async def create_subject(subject: schemas.TableHeader, token: str = Depends(oauth2_scheme),
                          db: Session = Depends(get_db)):
-    slave = Slave(token, db)
+    slave = Slave(db, token)
     try:
         slave.action(Action.CREATE, Entity.SUBJECT, subject=subject)
     except ValueError as e:
@@ -62,7 +62,7 @@ async def create_subject(subject: schemas.TableHeader, token: str = Depends(oaut
 @app.put("/subject")
 async def change_subject(old_subject: schemas.TableHeader, new_subject: schemas.TableHeader,
                          token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)):
-    slave = Slave(token, db)
+    slave = Slave(db, token)
     try:
         slave.action(Action.CHANGE, Entity.SUBJECT, old_subject=old_subject, new_subject=new_subject)
     except ValueError as e:
@@ -74,7 +74,7 @@ async def change_subject(old_subject: schemas.TableHeader, new_subject: schemas.
 @app.delete("/subject")
 async def delete_subject(subject: schemas.TableHeader, token: str = Depends(oauth2_scheme),
                          db: Session = Depends(get_db)):
-    slave = Slave(token, db)
+    slave = Slave(db, token)
     try:
         slave.action(Action.DELETE, Entity.SUBJECT, subject=subject)
     except ValueError as e:
@@ -88,7 +88,7 @@ async def delete_subject(subject: schemas.TableHeader, token: str = Depends(oaut
 @app.post("/control_point")
 async def create_control_point(control_point: schemas.TableHeader, token: str = Depends(oauth2_scheme),
                                db: Session = Depends(get_db)):
-    slave = Slave(token, db)
+    slave = Slave(db, token)
     try:
         slave.action(Action.CREATE, Entity.CONTROL_POINT, control_point=control_point)
     except ValueError as e:
@@ -99,7 +99,7 @@ async def create_control_point(control_point: schemas.TableHeader, token: str = 
 @app.put("/control_point")
 async def change_control_point(old_control_point: schemas.TableHeader, new_control_point: schemas.TableHeader,
                                token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)):
-    slave = Slave(token, db)
+    slave = Slave(db, token)
     try:
         slave.action(Action.CHANGE, Entity.CONTROL_POINT,
                      old_control_point=old_control_point, new_control_point=new_control_point)
@@ -112,7 +112,7 @@ async def change_control_point(old_control_point: schemas.TableHeader, new_contr
 @app.delete("/control_point")
 async def delete_control_point(control_point: schemas.TableHeader, token: str = Depends(oauth2_scheme),
                                db: Session = Depends(get_db)):
-    slave = Slave(token, db)
+    slave = Slave(db, token)
     try:
         slave.action(Action.DELETE, Entity.CONTROL_POINT, control_point=control_point)
     except ValueError as e:
@@ -124,13 +124,24 @@ async def delete_control_point(control_point: schemas.TableHeader, token: str = 
 @app.put("/cell")
 async def change_cell(subject: schemas.TableHeader, control_point: schemas.TableHeader, new_cell: schemas.Cell,
                       token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)):
-    slave = Slave(token, db)
+    slave = Slave(db, token)
     try:
         slave.action(Action.CHANGE, Entity.CELL, subject=subject, control_point=control_point, new_cell=new_cell)
     except ValueError as e:
         return {"error": True, "error_type": str(e)}
     else:
         return await sign_in(token, db)
+
+
+@app.post("/sign_up")
+async def sign_up(user: schemas.CreateUser, db: Session = Depends(get_db)):
+    slave = Slave(db)
+    try:
+        token = slave.action(Action.CREATE, Entity.USER, new_user=user)
+    except ValueError as e:
+        return {"error": True, "error_type": str(e)}
+    else:
+        return await token
 
 
 if __name__ == "__main__":
