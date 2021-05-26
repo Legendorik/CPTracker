@@ -48,7 +48,8 @@ async def sign_in(token: str = Depends(oauth2_scheme), db: Session = Depends(get
 
 
 @app.post("/subject")
-async def create_subject(subject: schemas.TableHeader, token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)):
+async def create_subject(subject: schemas.TableHeader, token: str = Depends(oauth2_scheme),
+                         db: Session = Depends(get_db)):
     slave = Slave(token, db)
     try:
         slave.action(Action.CREATE, Entity.SUBJECT, subject=subject)
@@ -116,7 +117,20 @@ async def delete_control_point(control_point: schemas.TableHeader, token: str = 
         slave.action(Action.DELETE, Entity.CONTROL_POINT, control_point=control_point)
     except ValueError as e:
         return {"error": True, "error_type": str(e)}
-    return await sign_in(token, db)
+    else:
+        return await sign_in(token, db)
+
+
+@app.put("/cell")
+async def change_cell(subject: schemas.TableHeader, control_point: schemas.TableHeader, new_cell: schemas.Cell,
+                      token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)):
+    slave = Slave(token, db)
+    try:
+        slave.action(Action.CHANGE, Entity.CELL, subject=subject, control_point=control_point, new_cell=new_cell)
+    except ValueError as e:
+        return {"error": True, "error_type": str(e)}
+    else:
+        return await sign_in(token, db)
 
 
 if __name__ == "__main__":

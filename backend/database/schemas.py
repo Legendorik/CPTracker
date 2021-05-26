@@ -1,3 +1,5 @@
+from typing import Optional
+from datetime import datetime
 from pydantic import BaseModel
 
 
@@ -21,3 +23,9 @@ class Token(BaseModel):
 class TableHeader(BaseModel):
     short_name: str
     full_name: str
+
+
+class Cell(BaseModel):
+    deadline: Optional[datetime]
+    description: Optional[str]
+    complete: Optional[bool]

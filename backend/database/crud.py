@@ -133,6 +133,12 @@ class Slave:
                 new_control_point = kwargs.get("new_control_point")
                 self.__change_control_point(old_control_point, new_control_point)
 
+            elif entity == Entity.CELL:
+                subject = kwargs.get("subject")
+                control_point = kwargs.get("control_point")
+                new_cell = kwargs.get("new_cell")
+                self.__change_cell(subject, control_point, new_cell)
+
         elif action == Action.DELETE:
             if entity == Entity.SUBJECT:
                 subject = kwargs.get("subject")
@@ -143,6 +149,47 @@ class Slave:
                 control_point = kwargs.get("control_point")
                 self.__delete_control_point(control_point)
                 self.__reindex_control_points()
+
+    def __change_cell(self, subject, control_point, new_cell):
+        subject_db = self.db.query(models.Subject).filter(
+            models.Subject.full_name == subject.full_name,
+            models.Subject.short_name == subject.short_name,
+        ).first()
+        if subject_db is None:
+            raise ValueError(f"<{subject.full_name}> subject not in db")
+
+        if subject_db not in self.user.subjects:
+            raise ValueError(f"user <{self.user.username}> hasn't got <{subject.full_name}> subject")
+
+        user_subjects = self.__get_user_subjects()
+        control_point_db = self.db.query(models.ControlPoint).filter(
+            models.ControlPoint.short_name == control_point.short_name,
+            models.ControlPoint.full_name == control_point.full_name,
+        ).first()
+        if control_point_db is None:
+            raise ValueError(f"<{control_point.full_name}> control point not in db")
+        if control_point_db not in user_subjects[0].control_points:
+            raise ValueError(f"user <{self.user.username}> hasn't got <{control_point.full_name}> control point")
+
+        user_subject = self.db.query(models.UserSubject).filter(
+            models.UserSubject.subject_id == subject_db.id,
+            models.UserSubject.user_id == self.user.id,
+        ).first()
+
+        cell = self.db.query(models.UserSubjectControlPoint).filter(
+            models.UserSubjectControlPoint.user_subject_id == user_subject.id,
+            models.UserSubjectControlPoint.control_point_id == control_point_db.id,
+        ).first()
+
+        deadline = new_cell.deadline
+        if not deadline.replace(tzinfo=None) > datetime.now() + timedelta(days=1):
+            raise ValueError(f"you can set datetime which more than current_date + 1 days")
+        cell.deadline = deadline
+        cell.complete = new_cell.complete
+        cell.description = new_cell.description
+
+        self.db.commit()
+
 
     def __reindex_subject(self):
         user_subjects = self.__get_user_subjects()
