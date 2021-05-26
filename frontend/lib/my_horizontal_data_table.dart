@@ -311,26 +311,26 @@ class _HorizontalDataTableState extends State<MyHorizontalDataTable> {
     });
   }
   Future<void> _deleteColumnListener() async {
-
-    try {
-      var response = await http.delete(Uri.parse('http://localhost:8000/control_point'), 
-        headers: {
-          "Authorization": "Bearer $token",
-          "charset": "utf-8", 
-        },
-        body: json.encode({
-          "short_name": columns[_lastColumnTitleChosenIndex].shortName,
-          "full_name": columns[_lastColumnTitleChosenIndex].longName
-        })
-    
-      );
-      print("Response status: ${response.statusCode}");
-      print("Response body: ${response.body}");
-      //add real id
-    } catch (err){
-      print(err);
+    if (columns[_lastColumnTitleChosenIndex].id != -1){
+      try {
+        var response = await http.delete(Uri.parse('http://localhost:8000/control_point'), 
+          headers: {
+            "Authorization": "Bearer $token",
+            "charset": "utf-8", 
+          },
+          body: json.encode({
+            "short_name": columns[_lastColumnTitleChosenIndex].shortName,
+            "full_name": columns[_lastColumnTitleChosenIndex].longName
+          })
+      
+        );
+        print("Response status: ${response.statusCode}");
+        print("Response body: ${response.body}");
+        
+      } catch (err){
+        print(err);
+      }
     }
-    
     setState(() {
       for (List<TaskInfo> v in cells){
         v.removeAt(_lastColumnTitleChosenIndex-1);
@@ -340,25 +340,26 @@ class _HorizontalDataTableState extends State<MyHorizontalDataTable> {
   }
   Future<void> _deleteRowListener() async {
 
-    try {
-      var response = await http.delete(Uri.parse('http://localhost:8000/subject'), 
-        headers: {
-          "Authorization": "Bearer $token",
-          "charset": "utf-8", 
-        },
-        body: json.encode({
-          "short_name": rows[_lastRowTitleChosenIndex].shortName,
-          "full_name": rows[_lastRowTitleChosenIndex].longName
-        })
-    
-      );
-      print("Response status: ${response.statusCode}");
-      print("Response body: ${response.body}");
-      //add real id
-    } catch (err){
-      print(err);
+    if (rows[_lastRowTitleChosenIndex].id != -1){
+      try {
+        var response = await http.delete(Uri.parse('http://localhost:8000/subject'), 
+          headers: {
+            "Authorization": "Bearer $token",
+            "charset": "utf-8", 
+          },
+          body: json.encode({
+            "short_name": rows[_lastRowTitleChosenIndex].shortName,
+            "full_name": rows[_lastRowTitleChosenIndex].longName
+          })
+      
+        );
+        print("Response status: ${response.statusCode}");
+        print("Response body: ${response.body}");
+        
+      } catch (err){
+        print(err);
+      }
     }
-
       
     setState(() {
       cells.removeAt(_lastRowTitleChosenIndex);
