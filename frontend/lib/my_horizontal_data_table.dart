@@ -240,7 +240,7 @@ class _HorizontalDataTableState extends State<MyHorizontalDataTable> {
       key: Key(type == 0 ? "addColumn":"addRow"),
       child:InkWell(
         child: Container(
-          child: Icon(Icons.add, size: 40, color: Colors.white),
+          child: Icon(Icons.add, size: 28, color: Colors.white),
           width: 100,
           height: 52,
           padding: EdgeInsets.fromLTRB(0, 0, 0, 0),
