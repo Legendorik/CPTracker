@@ -33,3 +33,24 @@ samples, guidance on mobile development, and a full API reference.
 ```bash
   docker run --name server -p 127.0.0.1:8000:8000/tcp --env-file .env -d server
 ```
+
+## Сборка приложения под Linux:
+1. Установка snapd
+```bash
+  sudo apt update
+  sudo apt upgrade -y
+  sudo apt install snapd
+```
+2. Установка flutter
+```bash
+  sudo snap install flutter --classic
+```
+3. Установка необходимых зависимостей
+```bash
+  sudo apt-get install clang cmake ninja-build pkg-config libgtk-3-dev -y
+  flutter config --enable-linux-desktop
+```
+4. Перейти в репу frontend  запустить приложение
+```bash
+  flutter run -d linux
+```
