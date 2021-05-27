@@ -111,25 +111,62 @@ class _PopupAuthorizationState extends State<PopupAuthorization>{
             },
           ),
         ),
-        Container(
-          alignment: Alignment.centerLeft,
-          padding: EdgeInsets.all(10),
-          child: ElevatedButton(
-            onPressed: _onPressedSaveButton, 
-            child: Text("Войти")
-          )
-        ),
+        Row(
+          children: [
+            Container(
+              alignment: Alignment.centerLeft,
+              padding: EdgeInsets.all(10),
+              child: ElevatedButton(
+                onPressed: _onPressedLoginButton, 
+                child: Text("Войти")
+              )
+            ),
+            Container(
+              alignment: Alignment.centerLeft,
+              padding: EdgeInsets.fromLTRB(0, 10, 10, 10),
+              child: ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  primary: Colors.red, // background
+                  onPrimary: Colors.white, // foreground
+                ),
+                onPressed: _onPressedRegistrationButton, 
+                child: Text("Зарегистрироваться")
+              )
+            ),
+          ],
+
+        )
         
       ],
 
     );
   }
 
-  Future<void> _onPressedSaveButton() async {
+  Future<void> _onPressedLoginButton() async {
       try {
         var response = await http.post(Uri.parse('http://localhost:8000/token'), body: {'username': _login,'password': _pass});
         print("Response status: ${response.statusCode}");
         print("Response body: ${response.body}");
+        _token = json.decode(response.body)["access_token"];
+        print("token $_token");
+      } catch (err){
+        print(err);
+      }
+    
+
+    listener(_token);
+    Navigator.pop(context);
+  }
+
+  Future<void> _onPressedRegistrationButton() async {
+      try {
+        var response = await http.post(Uri.parse('http://localhost:8000/sign_up'), body: json.encode({
+          "username": _login,
+          "password": _pass
+        }));
+        print("Response status: ${response.statusCode}");
+        print("Response body: ${response.body}");
+        
         _token = json.decode(response.body)["access_token"];
         print("token $_token");
       } catch (err){

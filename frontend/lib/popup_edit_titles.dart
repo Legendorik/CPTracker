@@ -128,7 +128,7 @@ class _PopupEditTitlesState extends State<PopupEditTitles>{
   }
 
   void _onPressedDeleteButton() {
-    print("AAAAAAAAAAAAAAAAAAAA");
+    //print("AAAAAAAAAAAAAAAAAAAA");
     deleteListener();
     Navigator.pop(context);
   }

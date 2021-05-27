@@ -62,13 +62,19 @@ class _HorizontalDataTableState extends State<MyHorizontalDataTable> {
   @override
   Widget build(BuildContext context) {
 
-    int itemCount = filterId == 0? rows.length+1 : rows.length;
-    double rightHandSideColumnWidth = filterId == 0? (columns.length-1)*100.0+100 : (columns.length-1)*100.0;
+    
     if (token == null){
+      columns = [ShortLongName("Предмет")];
+      rows = [];
+      cells = [];
+
       Timer(Duration(milliseconds: 200), (){
         showPopup(context, PopupAuthorization(listener: _authorizationListener), "Авторизация", width: 500, height: authorizationWindowHeight, needBackButton: false);
       });
     }
+
+    int itemCount = filterId == 0? rows.length+1 : rows.length;
+    double rightHandSideColumnWidth = filterId == 0? (columns.length-1)*100.0+100 : (columns.length-1)*100.0;
     return Container(
       child: HorizontalDataTable(
         leftHandSideColumnWidth: 100,
@@ -91,7 +97,7 @@ class _HorizontalDataTableState extends State<MyHorizontalDataTable> {
 
 
   List<Widget> _getTitlesWidget(){
-    //TODO get title list from server 
+
     List<Widget> res = [];
     
 
@@ -130,13 +136,13 @@ class _HorizontalDataTableState extends State<MyHorizontalDataTable> {
       ));
 
     }
-    if (filterId == 0)
+    if (filterId == 0 && rows.length != 0)
       res.add(_createButton(0));
     return res;
   }
 
   Widget _generateFirstColumnRow(BuildContext context, int index) {
-    //TODO get list from server 
+
     //print("index in first: $index");
 
     if (index == rows.length){
@@ -182,7 +188,7 @@ class _HorizontalDataTableState extends State<MyHorizontalDataTable> {
     List<Widget> cellsList = [];
     if (index < cells.length){
       for (int i=0; i<cells[index].length; i++) {
-        if ((filterId == 0) || (filterId == 1 && cells[index][i].state == 1) || (filterId == 2 && cells[index][i].state == 2))
+        if ((filterId == 0) || (filterId == 1 && cells[index][i].state == 1) || (filterId == 2 && cells[index][i].state == 2)){
           cellsList.add(
             
             Material(
@@ -205,7 +211,11 @@ class _HorizontalDataTableState extends State<MyHorizontalDataTable> {
               
             )
           );
-          
+        }  
+
+        if (i == cells[index].length - 1 && cellsList.isEmpty)  {
+          cellsList.add(Container(width: 100, height: 52, padding: EdgeInsets.fromLTRB(0, 0, 0, 0), alignment: Alignment.center));
+        }
       }
     }
     else {
@@ -266,13 +276,36 @@ class _HorizontalDataTableState extends State<MyHorizontalDataTable> {
     }
     else{
       DateTime dateTime = info.deadline; // your dateTime object
+      DateTime now = DateTime.now();
+      Color textColor;
+
+      if (dateTime.isBefore(now)){
+        textColor = Colors.red[700];
+      }
+      else if (dateTime.subtract(Duration(days:1)).isBefore(now)) {
+        textColor = Colors.orange[700];
+      }
+      else if (dateTime.subtract(Duration(days:3)).isBefore(now)) {
+        textColor = Colors.yellow[700];
+      }
+      else if (dateTime.subtract(Duration(days:7)).isBefore(now)) {
+        textColor = Colors.green;
+      }
+      else {
+        textColor = Colors.black;
+      }
+
+      if (info.state == 2){
+        textColor = Colors.black;
+      }
       DateFormat dateFormat = DateFormat("dd/MM/yy, HH:mm"); // how you want it to be formatted
       String string = dateFormat.format(dateTime);
+      
       return Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           filterId == 0 ? icon : titlePlusIcon,
-          Text(string, style: TextStyle(fontSize: 12))
+          Text(string, style: TextStyle(fontSize: 12, color: textColor))
         ],
       );
     }
@@ -306,7 +339,27 @@ class _HorizontalDataTableState extends State<MyHorizontalDataTable> {
       );
     });
   }
-  void _deleteColumnListener(){
+  Future<void> _deleteColumnListener() async {
+    if (columns[_lastColumnTitleChosenIndex].id != -1){
+      try {
+        var response = await http.delete(Uri.parse('http://localhost:8000/control_point'), 
+          headers: {
+            "Authorization": "Bearer $token",
+            "charset": "utf-8", 
+          },
+          body: json.encode({
+            "short_name": columns[_lastColumnTitleChosenIndex].shortName,
+            "full_name": columns[_lastColumnTitleChosenIndex].longName
+          })
+      
+        );
+        print("Response status: ${response.statusCode}");
+        print("Response body: ${response.body}");
+        
+      } catch (err){
+        print(err);
+      }
+    }
     setState(() {
       for (List<TaskInfo> v in cells){
         v.removeAt(_lastColumnTitleChosenIndex-1);
@@ -314,7 +367,33 @@ class _HorizontalDataTableState extends State<MyHorizontalDataTable> {
       columns.removeAt(_lastColumnTitleChosenIndex);
     });
   }
-  void _deleteRowListener(){
+  Future<void> _deleteRowListener() async {
+    if (rows.length == 1 && columns.length > 0){
+
+      //удалять нельзя
+      return;
+    }
+    if (rows[_lastRowTitleChosenIndex].id != -1){
+      try {
+        var response = await http.delete(Uri.parse('http://localhost:8000/subject'), 
+          headers: {
+            "Authorization": "Bearer $token",
+            "charset": "utf-8", 
+          },
+          body: json.encode({
+            "short_name": rows[_lastRowTitleChosenIndex].shortName,
+            "full_name": rows[_lastRowTitleChosenIndex].longName
+          })
+      
+        );
+        print("Response status: ${response.statusCode}");
+        print("Response body: ${response.body}");
+        
+      } catch (err){
+        print(err);
+      }
+    }
+      
     setState(() {
       cells.removeAt(_lastRowTitleChosenIndex);
       rows.removeAt(_lastRowTitleChosenIndex);
@@ -329,7 +408,54 @@ class _HorizontalDataTableState extends State<MyHorizontalDataTable> {
     showPopup(context, PopupTaskInfo(listener: _changeCellInfoListener, taskInfo: cells[i][j]), "Задание " + rows[i].shortName + " " + columns[j+1].shortName, width: 600,height: taskInfoWindowHeight);
   }
 
-  void _changeColumnTitleListener(ShortLongName value){
+  Future<void> _changeColumnTitleListener(ShortLongName value) async {
+
+    try {
+      if (value.id == -1){ //только что добавленный предмет
+          var response = await http.post(Uri.parse('http://localhost:8000/control_point'), 
+            headers: {
+              "Authorization": "Bearer $token",
+              "charset": "utf-8", 
+            },
+            body: json.encode({
+              "short_name": value.shortName,
+              "full_name": value.longName
+            })
+        
+          );
+          print("Response status: ${response.statusCode}");
+          print("Response body: ${response.body}");
+          //add real id
+          value.id = 0;
+      }
+      else {
+          var response = await http.put(Uri.parse('http://localhost:8000/control_point'), 
+            headers: {
+              "Authorization": "Bearer $token",
+              "charset": "utf-8", 
+            },
+            body: json.encode({
+              "old_subject" : {
+                "short_name": columns[_lastColumnTitleChosenIndex].shortName,
+                "full_name": columns[_lastColumnTitleChosenIndex].longName
+              },
+              "new_subject": {
+                "short_name": value.shortName,
+                "full_name": value.longName
+              }
+            })
+          );
+
+          print("Response status: ${response.statusCode}");
+          print("Response body: ${response.body}");
+          //add real id
+          //value.id = 0;
+      }
+    } catch (err){
+      print(err);
+    }
+
+
     setState(() {
       if (columns.length > _lastColumnTitleChosenIndex){
         columns[_lastColumnTitleChosenIndex] = value;
@@ -338,28 +464,51 @@ class _HorizontalDataTableState extends State<MyHorizontalDataTable> {
   }
   Future<void> _changeRowTitleListener(ShortLongName value) async {
 
-    if (value.id == -1){ //только что добавленный предмет
-      try {
-        var response = await http.post(Uri.parse('http://localhost:8000/subject'), 
-          headers: {
-            "Authorization": "Bearer $token",
-            "charset": "utf-8", 
-          },
-          body: json.encode({
-            "short_name": value.shortName,
-            "full_name": value.longName
-          })
-      
-        );
-        print("Response status: ${response.statusCode}");
-        print("Response body: ${response.body}");
-        //add real id
-        value.id = 0;
-      } catch (err){
-        print(err);
-      }
-    }
 
+    try {
+      if (value.id == -1){ //только что добавленный предмет
+          var response = await http.post(Uri.parse('http://localhost:8000/subject'), 
+            headers: {
+              "Authorization": "Bearer $token",
+              "charset": "utf-8", 
+            },
+            body: json.encode({
+              "short_name": value.shortName,
+              "full_name": value.longName
+            })
+        
+          );
+          print("Response status: ${response.statusCode}");
+          print("Response body: ${response.body}");
+          //add real id
+          value.id = 0;
+      }
+      else {
+          var response = await http.put(Uri.parse('http://localhost:8000/subject'), 
+            headers: {
+              "Authorization": "Bearer $token",
+              "charset": "utf-8", 
+            },
+            body: json.encode({
+              "old_subject" : {
+                "short_name": rows[_lastRowTitleChosenIndex].shortName,
+                "full_name": rows[_lastRowTitleChosenIndex].longName
+              },
+              "new_subject": {
+                "short_name": value.shortName,
+                "full_name": value.longName
+              }
+            })
+          );
+
+          print("Response status: ${response.statusCode}");
+          print("Response body: ${response.body}");
+          //add real id
+          //value.id = 0;
+      }
+    } catch (err){
+      print(err);
+    }
     setState(() {
       //print(_lastRowTitleChosenIndex);
       if (rows.length > _lastRowTitleChosenIndex){
@@ -368,9 +517,40 @@ class _HorizontalDataTableState extends State<MyHorizontalDataTable> {
       }
     });
   }
-  void _changeCellInfoListener(TaskInfo value){
-    //print(value.description);
-    //print(cells[_lastCellChosenIndex[0]][_lastCellChosenIndex[1]].description);
+  Future<void> _changeCellInfoListener(TaskInfo value) async {
+
+
+
+    try {
+      print(rows[_lastCellChosenIndex[0]].shortName + "  " + columns[_lastCellChosenIndex[1]+1].shortName);
+      var response = await http.put(Uri.parse('http://localhost:8000/cell'), 
+        headers: {
+          "Authorization": "Bearer $token",
+          "charset": "utf-8", 
+        },
+        body: json.encode({
+            "subject": {
+              "short_name": rows[_lastCellChosenIndex[0]].shortName,
+              "full_name": rows[_lastCellChosenIndex[0]].longName
+            },
+            "control_point": {
+              "short_name": columns[_lastCellChosenIndex[1]+1].shortName,
+              "full_name": columns[_lastCellChosenIndex[1]+1].longName
+            },
+            "new_cell": {
+              "deadline": value.deadline == null ? null : value.deadline.toString(),
+              "description": value.description,
+              "complete": value.state == 2 ? true : value.state == 1 ? false : null
+            }
+        })
+      );
+
+      print("Response status: ${response.statusCode}");
+      print("Response body: ${response.body}");
+    } catch (err){
+      print(err);
+    }
+
     setState(() {
       cells[_lastCellChosenIndex[0]][_lastCellChosenIndex[1]].state = value.state;
       cells[_lastCellChosenIndex[0]][_lastCellChosenIndex[1]].description = value.description;
@@ -389,32 +569,7 @@ class _HorizontalDataTableState extends State<MyHorizontalDataTable> {
             
           }
         );
-        setState(() {
-          this.token = token;
-          tokenSetter(token); // передача вышестоящему виджету
-          //print("Response status: ${response.statusCode}");
-          //print("Response body: ${response.body}");
-          var body = json.decode(utf8.decode(response.body.codeUnits));
-          List<ShortLongName> newRows = [];
-          List<ShortLongName> newColumns = [ShortLongName("Предмет")];
-          List<List<TaskInfo>> newCells = [];
-          for (var v in body["rows"]){ //id, short_name, name
-            newRows.add(ShortLongName.full(v[2], v[1], v[0]));
-          }
-          for (var v in body["columns"]){ //id, short_name, name
-            newColumns.add(ShortLongName.full(v[2], v[1], v[0]));
-            
-          }
-          for (var v in body["cells"]){ //id, short_name, name
-
-            newCells.add([]);
-            //продолжение добавления
-          }
-          rows = newRows;
-          columns = newColumns;
-          cells = newCells;
-          
-        });
+        _authorize(token, response);
       } catch (err){
         print(err);
       }
@@ -425,8 +580,49 @@ class _HorizontalDataTableState extends State<MyHorizontalDataTable> {
       //recall authorization window
       showPopup(context, PopupAuthorization(listener: _authorizationListener), "Авторизация", width: 500, height: authorizationWindowHeight, needBackButton: false);
     }
-    
+  }
 
+  void _authorize(token, response){
+
+    setState(() {
+      this.token = token;
+      tokenSetter(token); // передача вышестоящему виджету
+      //print("Response status: ${response.statusCode}");
+      //print("Response body: ${response.body}");
+
+      var body = json.decode(utf8.decode(response.body.codeUnits));
+
+      List<ShortLongName> newRows = [];
+      List<ShortLongName> newColumns = [ShortLongName("Предмет")];
+      List<List<TaskInfo>> newCells = [];
+
+      for (int i=0; i<body["rows"].length; i++){
+        var v = body["rows"][i.toString()];
+        print("$v \n\n");
+        newRows.add(ShortLongName.full(v["full_name"], v["short_name"], v["id"]));
+      }
+
+      for (int i=0; i<body["columns"].length; i++){
+        var v = body["columns"][i.toString()];
+        print("$v \n\n");
+        newColumns.add(ShortLongName.full(v["full_name"], v["short_name"], v["id"]));
+      }
+
+      for (int i=0; i<body["cells"].length; i++){
+        List<TaskInfo> newCellsRow = [];
+        var v = body["cells"][i.toString()];
+        for (int ii=0; ii<v.length; ii++){
+          var vv = v[ii.toString()];
+          int myState = vv["status"] == null ? 0 : vv["status"] ? 2 : 1;
+          newCellsRow.add(TaskInfo.full(myState, vv["description"] == null ? "" : vv["description"], DateTime.tryParse(vv["deadline"] == null? "" : vv["deadline"]), 1));
+        }
+        newCells.add(newCellsRow);
+      } 
+      rows = newRows;
+      columns = newColumns;
+      cells = newCells;
+      
+    });
   }
 
   
