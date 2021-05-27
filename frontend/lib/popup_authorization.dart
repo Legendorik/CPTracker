@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:homework_task_tracker/popup_alert.dart';
+import 'package:homework_task_tracker/popup_content.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
@@ -143,15 +145,27 @@ class _PopupAuthorizationState extends State<PopupAuthorization>{
   }
 
   Future<void> _onPressedLoginButton() async {
-      try {
-        var response = await http.post(Uri.parse('http://146.185.241.101:8000/token'), body: {'username': _login,'password': _pass});
-        print("Response status: ${response.statusCode}");
-        print("Response body: ${response.body}");
-        _token = json.decode(response.body)["access_token"];
-        print("token $_token");
-      } catch (err){
-        print(err);
+    try {
+      var response = await http.post(Uri.parse('http://146.185.241.101:8000/token'), body: {'username': _login,'password': _pass});
+      print("Response status: ${response.statusCode}");
+      print("Response body: ${response.body}");
+      _token = json.decode(response.body)["access_token"];
+      print("token $_token");
+      if (_token == null){
+        showPopup(context, PopupAlert(
+          text: "Неверный логин или пароль.", w: 500), 
+          "Ошибка входа", width: 500, height: 125
+        );
+        return;
       }
+    } catch (err){
+      print(err);
+      showPopup(context, PopupAlert(
+        text: "Произошла ошибка при входе. Попробуйте позже.", w: 500), 
+        "Ошибка входа", width: 500, height: 125
+      );
+      return;
+    }
     
 
     listener(_token);
@@ -159,19 +173,48 @@ class _PopupAuthorizationState extends State<PopupAuthorization>{
   }
 
   Future<void> _onPressedRegistrationButton() async {
-      try {
-        var response = await http.post(Uri.parse('http://146.185.241.101:8000/sign_up'), body: json.encode({
-          "username": _login,
-          "password": _pass
-        }));
-        print("Response status: ${response.statusCode}");
-        print("Response body: ${response.body}");
+    try {
+      var response = await http.post(Uri.parse('http://146.185.241.101:8000/sign_up'), body: json.encode({
+        "username": _login,
+        "password": _pass
+      }));
+      print("Response status: ${response.statusCode}");
+      print("Response body: ${response.body}");
+      
+      _token = json.decode(response.body)["access_token"];
+      var error = json.decode(response.body)["error_type"];
+      print("token $_token");
+      if (_token == null){
+        if (_login == "" || _pass == "") {
+          showPopup(context, PopupAlert(
+            text: "Введите логин и пароль.", w: 500), 
+            "Ошибка регистрации", width: 500, height: 125
+          );
+        }
+        else if (error != null && error.toString().endsWith("already exists") ){
+          showPopup(context, PopupAlert(
+            text: "Пользователь с таким именем уже существует.", w: 500), 
+            "Ошибка регистрации", width: 500, height: 125
+          );
+        }
+        else {
+          showPopup(context, PopupAlert(
+            text: "Произошла ошибка при регистрации. Попробуйте позже.", w: 500), 
+            "Ошибка регистрации", width: 500, height: 125
+          );
+        }
         
-        _token = json.decode(response.body)["access_token"];
-        print("token $_token");
-      } catch (err){
-        print(err);
+        return;
       }
+      
+    } catch (err){
+      print(err);
+      showPopup(context, PopupAlert(
+        text: "Произошла ошибка при регистрации. Попробуйте позже.", w: 500), 
+        "Ошибка регистрации", width: 500, height: 125
+      );
+      return;
+    }
     
 
     listener(_token);
