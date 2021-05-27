@@ -32,7 +32,7 @@ class _MyHomePageState extends State<MyHomePage> {
             tooltip: 'Выход',
             onPressed: () async {
               try {
-                var response = await http.post(Uri.parse('http://localhost:8000/sign_out'),
+                var response = await http.post(Uri.parse('http://146.185.241.101:8000/sign_out'),
                   headers: {
                     "Authorization": "Bearer $token",
                     "charset": "utf-8",

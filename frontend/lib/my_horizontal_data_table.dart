@@ -344,7 +344,7 @@ class _HorizontalDataTableState extends State<MyHorizontalDataTable> {
   Future<void> _deleteColumnListener() async {
     if (columns[_lastColumnTitleChosenIndex].id != -1){
       try {
-        var response = await http.delete(Uri.parse('http://localhost:8000/control_point'), 
+        var response = await http.delete(Uri.parse('http://146.185.241.101:8000/control_point'), 
           headers: {
             "Authorization": "Bearer $token",
             "charset": "utf-8", 
@@ -379,7 +379,7 @@ class _HorizontalDataTableState extends State<MyHorizontalDataTable> {
     }
     if (rows[_lastRowTitleChosenIndex].id != -1){
       try {
-        var response = await http.delete(Uri.parse('http://localhost:8000/subject'), 
+        var response = await http.delete(Uri.parse('http://146.185.241.101:8000/subject'), 
           headers: {
             "Authorization": "Bearer $token",
             "charset": "utf-8", 
@@ -418,7 +418,7 @@ class _HorizontalDataTableState extends State<MyHorizontalDataTable> {
 
     try {
       if (value.id == -1){ //только что добавленный предмет
-          var response = await http.post(Uri.parse('http://localhost:8000/control_point'), 
+          var response = await http.post(Uri.parse('http://146.185.241.101:8000/control_point'), 
             headers: {
               "Authorization": "Bearer $token",
               "charset": "utf-8", 
@@ -436,7 +436,7 @@ class _HorizontalDataTableState extends State<MyHorizontalDataTable> {
           value.id = 0;
       }
       else {
-          var response = await http.put(Uri.parse('http://localhost:8000/control_point'), 
+          var response = await http.put(Uri.parse('http://146.185.241.101:8000/control_point'), 
             headers: {
               "Authorization": "Bearer $token",
               "charset": "utf-8", 
@@ -475,7 +475,7 @@ class _HorizontalDataTableState extends State<MyHorizontalDataTable> {
 
     try {
       if (value.id == -1){ //только что добавленный предмет
-          var response = await http.post(Uri.parse('http://localhost:8000/subject'), 
+          var response = await http.post(Uri.parse('http://146.185.241.101:8000/subject'), 
             headers: {
               "Authorization": "Bearer $token",
               "charset": "utf-8", 
@@ -493,7 +493,7 @@ class _HorizontalDataTableState extends State<MyHorizontalDataTable> {
           value.id = 0;
       }
       else {
-          var response = await http.put(Uri.parse('http://localhost:8000/subject'), 
+          var response = await http.put(Uri.parse('http://146.185.241.101:8000/subject'), 
             headers: {
               "Authorization": "Bearer $token",
               "charset": "utf-8", 
@@ -533,7 +533,7 @@ class _HorizontalDataTableState extends State<MyHorizontalDataTable> {
 
     try {
       print(rows[_lastCellChosenIndex[0]].shortName + "  " + columns[_lastCellChosenIndex[1]+1].shortName);
-      var response = await http.put(Uri.parse('http://localhost:8000/cell'), 
+      var response = await http.put(Uri.parse('http://146.185.241.101:8000/cell'), 
         headers: {
           "Authorization": "Bearer $token",
           "charset": "utf-8", 
@@ -574,7 +574,7 @@ class _HorizontalDataTableState extends State<MyHorizontalDataTable> {
 
     if (token != null){
       try {
-        var response = await http.post(Uri.parse('http://localhost:8000/get_dashboard'), 
+        var response = await http.post(Uri.parse('http://146.185.241.101:8000/get_dashboard'), 
           headers: {
             "Authorization": "Bearer $token",
             "charset": "utf-8",
