@@ -50,7 +50,15 @@ samples, guidance on mobile development, and a full API reference.
   sudo apt-get install clang cmake ninja-build pkg-config libgtk-3-dev -y
   flutter config --enable-linux-desktop
 ```
-4. Перейти в репу frontend  запустить приложение
+4. Скачать реп
+```bash
+  git clone https://github.com/Legendorik/CPTracker
+```
+5. Перейти в папку frontend
+```bash
+  cd CPTracker/frontend
+```
+6. Запустить приложение
 ```bash
   flutter run -d linux
 ```
