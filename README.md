@@ -31,7 +31,7 @@ samples, guidance on mobile development, and a full API reference.
 ```
 5. Запустить контейнер
 ```bash
-  docker run --name server -p 127.0.0.1:8000:8000/tcp --env-file .env -d server
+  docker run --name server -p 0.0.0.0:8000:8000/tcp --env-file .env -d server
 ```
 
 ## Сборка приложения под Linux:
