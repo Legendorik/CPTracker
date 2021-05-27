@@ -34,6 +34,8 @@ samples, guidance on mobile development, and a full API reference.
   docker run --name server -p 0.0.0.0:8000:8000/tcp --env-file .env -d server
 ```
 
+Сборка сервера опциональна, приложение работает с удаленным сервером
+
 ## Сборка приложения под Linux:
 1. Установка snapd
 ```bash
@@ -50,15 +52,63 @@ samples, guidance on mobile development, and a full API reference.
   sudo apt-get install clang cmake ninja-build pkg-config libgtk-3-dev -y
   flutter config --enable-linux-desktop
 ```
-4. Скачать реп
+4. Проверить дополнительные требования для использования flutter
+```bash
+  flutter doctor
+```
+5. Клонировать репозиторий
 ```bash
   git clone https://github.com/Legendorik/CPTracker
 ```
-5. Перейти в папку frontend
+6. Перейти в папку frontend
 ```bash
   cd CPTracker/frontend
 ```
-6. Запустить приложение
+7. Установить необходимые пакеты
+```bash
+  flutter pub get
+```
+8. Запустить приложение
 ```bash
   flutter run -d linux
+```
+
+Для сборки релизной версии используйте команду
+```bash
+  flutter build linux
+```
+
+## Сборка приложения под Windows:
+1. Загрузите и установите Flutter SDK с официального сайта https://flutter.dev/docs/get-started/install/windows
+
+2. Измените переменную PATH соответственно руководству https://flutter.dev/docs/get-started/install/windows#update-your-path
+
+3. Проверить дополнительные требования для использования flutter
+```bash
+  flutter doctor
+```
+4. Клонировать репозиторий
+```bash
+  git clone https://github.com/Legendorik/CPTracker
+```
+5. Открыть папку frontend
+```bash
+  cd CPTracker/frontend
+```
+6. Настроить платформу для сборки
+```bash
+  flutter config --enable-windows-desktop
+```
+7. Установить необходимые пакеты
+```bash
+  flutter pub get
+```
+8. Запустить приложение
+```bash
+  flutter run -d windows
+```
+
+Для сборки релизной версии используйте команду
+```bash
+  flutter build windows
 ```
