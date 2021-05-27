@@ -627,8 +627,10 @@ class _HorizontalDataTableState extends State<MyHorizontalDataTable> {
         var v = body["cells"][i.toString()];
         for (int ii=0; ii<v.length; ii++){
           var vv = v[ii.toString()];
-          int myState = vv["status"] == null ? 0 : vv["status"] ? 2 : 1;
-          newCellsRow.add(TaskInfo.full(myState, vv["description"] == null ? "" : vv["description"], DateTime.tryParse(vv["deadline"] == null? "" : vv["deadline"]), 1));
+          if (vv != null){
+            int myState = vv["status"] == null ? 0 : vv["status"] ? 2 : 1;
+            newCellsRow.add(TaskInfo.full(myState, vv["description"] == null ? "" : vv["description"], DateTime.tryParse(vv["deadline"] == null? "" : vv["deadline"]), 1));
+          }
         }
         newCells.add(newCellsRow);
       } 
